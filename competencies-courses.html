@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Компетенции аналитика → курсы</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7fb;
+            color: #1e293b;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1 small {
+            font-size: 16px;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        .layout {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .sidebar {
+            flex: 0 0 280px;
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        .category-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            padding-left: 8px;
+            border-left: 3px solid #2563eb;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            margin-bottom: 8px;
+        }
+
+        .sidebar li {
+            padding: 6px 12px 6px 20px;
+            margin-bottom: 2px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .sidebar li:hover {
+            background: #e2e8f0;
+        }
+
+        .sidebar li.active {
+            background: #2563eb;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .competence-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .course-section {
+            margin-bottom: 30px;
+        }
+
+        .course-section h3 {
+            font-size: 18px;
+            color: #334155;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .course-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .course-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .course-card a {
+            text-decoration: none;
+            color: #1e293b;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .course-card a:hover {
+            color: #2563eb;
+        }
+
+        .course-card .desc {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.4;
+        }
+
+        .empty-state {
+            color: #94a3b8;
+            font-style: italic;
+            padding: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex: 1;
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📚 Компетенции → курсы <small>выберите компетенцию</small></h1>
+
+    <div class="layout">
+        <!-- Список компетенций с группировкой -->
+        <div class="sidebar" id="competenceList">
+            <h2>Компетенции</h2>
+            <div id="categoryContainer"></div>
+        </div>
+
+        <!-- Основная область -->
+        <div class="main">
+            <input type="text" class="search-box" id="searchInput" placeholder="Поиск по названию курса...">
+            <div id="resultArea">
+                <div class="competence-title" id="compTitle">Выберите компетенцию</div>
+                <div id="coursesContainer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Данные сгруппированы по категориям
+    const data = {
+        "Сбор и анализ требований": {
+            "Выявление и сбор требований": {
+                korpus: [
+                    { name: "Проведение CustDev-ов", url: "https://edu.korusconsulting.ru/course/view.php?id=102" },
+                    { name: "Воркшоп | Выбор лучших: Как проводить успешные интервью", url: "https://edu.korusconsulting.ru/course/view.php?id=568" },
+                    { name: "Вебибар “Пресейлы: как проводить успешные встречи с клиентами”", url: "https://edu.korusconsulting.ru/course/view.php?id=687" },
+                    { name: "Интервью с заказчиком: как произвести профессиональное впечатление", url: "https://edu.korusconsulting.ru/course/view.php?id=1330" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" },
+                    { name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2" }
+                ]
+            },
+            "Анализ и формулирование ФТ": {
+                korpus: [
+                    { name: "Как написать ТЗ, чтобы не было мучительно больно", url: "https://edu.korusconsulting.ru/course/view.php?id=392" },
+                    { name: "Постановка задач в разработку (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=628" },
+                    { name: "OpenSpec: как найти блокеры и противоречия в ТЗ до начала разработки", url: "https://edu.korusconsulting.ru/course/view.php?id=1462" },
+                    { name: "Ключевые инструменты аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=827" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            },
+            "Анализ и формулирование НФТ": {
+                korpus: [
+                    { name: "Тестирование. Зачем аналитику тестировать разработку?", url: "https://edu.korusconsulting.ru/course/view.php?id=703" },
+                    { name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768" }
+                ],
+                dar: [
+                    { name: "Основы информационной безопасности", url: "https://edu.korusconsulting.ru/course/view.php?id=978" },
+                    { name: "Обработка персональных данных", url: "https://edu.korusconsulting.ru/course/view.php?id=985" }
+                ]
+            },
+            "Моделирование процессов": {
+                korpus: [
+                    { name: "Анна Вичугова - BPMN для людей", url: "https://edu.korusconsulting.ru/course/view.php?id=577" },
+                    { name: "Моделирование и автоматизация бизнес-процессов", url: "https://edu.korusconsulting.ru/course/view.php?id=219" },
+                    { name: "UML в Архитектуре, Аналитике и Разработке", url: "https://edu.korusconsulting.ru/course/view.php?id=760" },
+                    { name: "BPMN", url: "https://edu.korusconsulting.ru/course/view.php?id=1344" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            }
+        },
+        "Проектирование и разработка": {
+            "Бизнес-глоссарий / логическая модель данных": {
+                korpus: [
+                    { name: "Задание \"Модели данных и проектирование\"", url: "https://edu.korusconsulting.ru/course/view.php?id=949" },
+                    { name: "Задание \"Проектирование ФМД\"", url: "https://edu.korusconsulting.ru/course/view.php?id=977" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            },
+            "Модель данных": {
+                korpus: [
+                    { name: "ER-диаграмма (тест)", url: "https://edu.korusconsulting.ru/course/view.php?id=951" },
+                    { name: "Задание \"ER-диаграмма\"", url: "https://edu.korusconsulting.ru/course/view.php?id=950" },
+                    { name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" },
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162" }
+                ]
+            },
+            "Требования к интеграции": {
+                korpus: [
+                    { name: "Интеграции REST", url: "https://edu.korusconsulting.ru/course/view.php?id=1391" },
+                    { name: "Интеграционные возможности 1С:Документооборот 3.0", url: "https://edu.korusconsulting.ru/course/view.php?id=618" },
+                    { name: "Тест \"Стили интеграции\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1409" }
+                ],
+                dar: [
+                    { name: "Apache Kafka", url: "https://edu.korusconsulting.ru/course/view.php?id=1157" }
+                ]
+            },
+            "S2T (Source-to-Target)": {
+                korpus: [
+                    { name: "Задание \"Архитектура КХД\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1357" },
+                    { name: "DBT", url: "https://edu.korusconsulting.ru/course/view.php?id=1159" }
+                ],
+                dar: [
+                    { name: "DBT", url: "https://edu.korusconsulting.ru/course/view.php?id=1159" },
+                    { name: "Apache Airflow", url: "https://edu.korusconsulting.ru/enrol/index.php?id=1022" }
+                ]
+            },
+            "Постановка на разработку": {
+                korpus: [
+                    { name: "Постановка задач для разработчиков", url: "https://edu.korusconsulting.ru/course/view.php?id=698" },
+                    { name: "Задание \"Стандарты разработки, naming convention\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1033" }
+                ],
+                dar: [
+                    { name: "Инструкция пользователя Youtrack", url: "https://edu.korusconsulting.ru/course/view.php?id=495" },
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            }
+        },
+        "Тестирование": {
+            "Тестирование (общее)": {
+                korpus: [
+                    { name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768" },
+                    { name: "Тестирование с Ванессой", url: "https://edu.korusconsulting.ru/course/view.php?id=1178" },
+                    { name: "Автоматизированное тестирование", url: "https://edu.korusconsulting.ru/course/view.php?id=195" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            }
+        },
+        "Анализ данных": {
+            "SQL": {
+                korpus: [
+                    { name: "Базы данных и SQL: обучение", url: "https://edu.korusconsulting.ru/course/view.php?id=248" },
+                    { name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324" },
+                    { name: "Задание \"Типы данных SQL\"", url: "https://edu.korusconsulting.ru/course/view.php?id=976" },
+                    { name: "Язык запросов \"1С:Предприятия 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1241" }
+                ],
+                dar: [
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162" },
+                    { name: "ClickHouse", url: "https://edu.korusconsulting.ru/enrol/index.php?id=676" },
+                    { name: "GreenPlum", url: "https://edu.korusconsulting.ru/enrol/index.php?id=615" }
+                ]
+            },
+            "Основы статистики": {
+                korpus: [
+                    { name: "Математические инструменты в \"1С:Предприятие 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=81" },
+                    { name: "Книга. Джордан Морроу - Как вытащить из данных максимум", url: "https://edu.korusconsulting.ru/course/view.php?id=588" }
+                ],
+                dar: [
+                    { name: "Машинное обучение (ML)", url: "https://edu.korusconsulting.ru/course/view.php?id=1240" },
+                    { name: "Apache Spark", url: "https://edu.korusconsulting.ru/enrol/index.php?id=487" }
+                ]
+            },
+            "Качество данных": {
+                korpus: [
+                    { name: "Задание \"Показатели качества данных\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1041" },
+                    { name: "Тестирование по Data Quality", url: "https://edu.korusconsulting.ru/course/view.php?id=1349" }
+                ],
+                dar: [
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162" }
+                ]
+            }
+        },
+        "Работа с документами": {
+            "Документирование": {
+                korpus: [
+                    { name: "Проектная документация работа с корпоративным шаблоном (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=629" },
+                    { name: "Шаблоны документов", url: "https://edu.korusconsulting.ru/course/view.php?id=1019" },
+                    { name: "Инструкция по составлению протоколов (мемо)", url: "https://edu.korusconsulting.ru/course/view.php?id=757" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" },
+                    { name: "Инструкция пользователя Youtrack", url: "https://edu.korusconsulting.ru/course/view.php?id=495" }
+                ]
+            },
+            "Редактура и текст": {
+                korpus: [
+                    { name: "Курс «Идеальный русский»", url: "https://edu.korusconsulting.ru/course/view.php?id=300" },
+                    { name: "Микрокурс \"Деловая переписка\"", url: "https://edu.korusconsulting.ru/course/view.php?id=558" },
+                    { name: "Микрокурс \"Как общаться в мессенджерах\"", url: "https://edu.korusconsulting.ru/course/view.php?id=525" }
+                ],
+                dar: [
+                    { name: "Деловая переписка. Часть 1", url: "https://edu.korusconsulting.ru/enrol/index.php?id=558" },
+                    { name: "Деловая переписка: забота и уважение Часть 2", url: "https://edu.korusconsulting.ru/enrol/index.php?id=617" },
+                    { name: "Как общаться в мессенджерах", url: "https://edu.korusconsulting.ru/course/view.php?id=525" }
+                ]
+            }
+        },
+        "Макетирование и UI/UX": {
+            "Макетирование": {
+                korpus: [
+                    { name: "Супер Figma от VideoSmile", url: "https://edu.korusconsulting.ru/course/view.php?id=581" },
+                    { name: "Работа в Axure 7 для начинающих", url: "https://edu.korusconsulting.ru/course/view.php?id=20" },
+                    { name: "Основы проектирования интерфейсов в Axure", url: "https://edu.korusconsulting.ru/course/view.php?id=111" },
+                    { name: "Задание \"Прототипирование витрин\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1412" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            },
+            "Подбор типа графика / визуализация": {
+                korpus: [
+                    { name: "Тренинг по дашбордам от DataYoga", url: "https://edu.korusconsulting.ru/course/view.php?id=106" },
+                    { name: "Визуализация данных (ДАР)", url: "https://edu.korusconsulting.ru/course/view.php?id=1242" },
+                    { name: "Книга. Ольга Базалева - Мастерство визуализации данных", url: "https://edu.korusconsulting.ru/course/view.php?id=593" }
+                ],
+                dar: [
+                    { name: "Визуализация данных (ДАР)", url: "https://edu.korusconsulting.ru/course/view.php?id=1242" },
+                    { name: "LuxmsBI, первые шаги", url: "https://edu.korusconsulting.ru/course/view.php?id=1177" },
+                    { name: "AI-ассистент для визуализации данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1406" }
+                ]
+            },
+            "UX-паттерны": {
+                korpus: [
+                    { name: "Вебинар «UX/UI дизайн»", url: "https://edu.korusconsulting.ru/course/view.php?id=334" },
+                    { name: "Макетирование для не-дизайнеров", url: "https://edu.korusconsulting.ru/course/view.php?id=1174" }
+                ],
+                dar: []
+            }
+        },
+        "Участие в Presale": {
+            "Прескейл-компетенции": {
+                korpus: [
+                    { name: "Пресейлы: Искусство оценки, когда мало данных, но много ответственности", url: "https://edu.korusconsulting.ru/course/view.php?id=1458" },
+                    { name: "Вебинар \"Чек-лист как провести демонстрацию программного продукта клиенту\"", url: "https://edu.korusconsulting.ru/course/view.php?id=740" },
+                    { name: "Проведение ПСИ/демонстраций (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=630" },
+                    { name: "Обучение пресейлов", url: "https://edu.korusconsulting.ru/course/view.php?id=177" }
+                ],
+                dar: [
+                    { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52" },
+                    { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160" }
+                ]
+            }
+        },
+        "Управление ожиданиями и изменениями": {
+            "Управление ожиданиями": {
+                korpus: [
+                    { name: "Семинар по управлению ожиданиями заказчика", url: "https://edu.korusconsulting.ru/course/view.php?id=557" },
+                    { name: "Вебинар \"Как компании внедряют ИИ\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1060" }
+                ],
+                dar: [
+                    { name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161" }
+                ]
+            },
+            "Управление изменениями": {
+                korpus: [
+                    { name: "Вебинар \"Внедрение непопулярных изменений\"", url: "https://edu.korusconsulting.ru/course/view.php?id=260" },
+                    { name: "Управление договором, требованиями и изменениями", url: "https://edu.korusconsulting.ru/course/view.php?id=747" }
+                ],
+                dar: [
+                    { name: "Ступень 2. Я развиваю свой ДАР Наставничества", url: "https://edu.korusconsulting.ru/course/view.php?id=1165" }
+                ]
+            }
+        },
+        "Управление проектом": {
+            "Проектные методологии": {
+                korpus: [
+                    { name: "Гибкие методологии", url: "https://edu.korusconsulting.ru/course/view.php?id=220" },
+                    { name: "Введение в проектное управление", url: "https://edu.korusconsulting.ru/course/view.php?id=1446" },
+                    { name: "Базовый функционал MS Project", url: "https://edu.korusconsulting.ru/course/view.php?id=31" },
+                    { name: "Стратоплан. Про проекты", url: "https://edu.korusconsulting.ru/course/view.php?id=576" }
+                ],
+                dar: [
+                    { name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2" },
+                    { name: "Введение в проектное управление", url: "https://edu.korusconsulting.ru/course/view.php?id=1446" }
+                ]
+            },
+            "Анализ рисков": {
+                korpus: [
+                    { name: "Риски на проектах (Power.UP XII)", url: "https://edu.korusconsulting.ru/course/view.php?id=750" },
+                    { name: "Вебинар Алексея Сидоренко_Управление рисками", url: "https://edu.korusconsulting.ru/course/view.php?id=114" }
+                ],
+                dar: [
+                    { name: "Apache Airflow", url: "https://edu.korusconsulting.ru/enrol/index.php?id=1022" }
+                ]
+            },
+            "Управление проектом (общее)": {
+                korpus: [
+                    { name: "Книга \"Введение в управление проектами внедрения ERP-систем\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1226" },
+                    { name: "Курс \"Основы проектного управления\"", url: "https://edu.korusconsulting.ru/course/view.php?id=741" },
+                    { name: "Интенсив для РП по управлению командой", url: "https://edu.korusconsulting.ru/course/view.php?id=968" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" }
+                ]
+            },
+            "Оценка трудозатрат": {
+                korpus: [
+                    { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52" },
+                    { name: "Основы экономики проектов (Power.UP XII)", url: "https://edu.korusconsulting.ru/course/view.php?id=745" },
+                    { name: "Вебинар. Финансовая модель", url: "https://edu.korusconsulting.ru/course/view.php?id=458" }
+                ],
+                dar: [
+                    { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52" },
+                    { name: "Проектный бонус", url: "https://edu.korusconsulting.ru/course/view.php?id=729" }
+                ]
+            },
+            "Опыт реализации проектов": {
+                korpus: [
+                    { name: "Программа обучения стажеров 1С", url: "https://edu.korusconsulting.ru/course/view.php?id=378" },
+                    { name: "Курс молодого бойца", url: "https://edu.korusconsulting.ru/course/view.php?id=232" },
+                    { name: "Менторинг", url: "https://edu.korusconsulting.ru/course/view.php?id=449" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163" },
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162" }
+                ]
+            },
+            "Работа в режиме многозадачности": {
+                korpus: [
+                    { name: "Тренинг \"Тайм-менеджмент без стресса\"", url: "https://edu.korusconsulting.ru/course/view.php?id=840" },
+                    { name: "Управление рабочим временем", url: "https://edu.korusconsulting.ru/course/view.php?id=722" },
+                    { name: "Тайм-менеджмент (общий курс)", url: "https://edu.korusconsulting.ru/course/view.php?id=12" }
+                ],
+                dar: [
+                    { name: "Таймшиты. Учёт рабочего времени", url: "https://edu.korusconsulting.ru/course/view.php?id=569" }
+                ]
+            }
+        },
+        "HR и развитие сотрудников": {
+            "Развитие сотрудников": {
+                korpus: [
+                    { name: "Как составить ИПР на примере 1С", url: "https://edu.korusconsulting.ru/course/view.php?id=503" },
+                    { name: "Менторинг 2.0", url: "https://edu.korusconsulting.ru/course/view.php?id=449" },
+                    { name: "Курс для руководителей Лига Лидеров КОРУС", url: "https://edu.korusconsulting.ru/course/view.php?id=1385" }
+                ],
+                dar: [
+                    { name: "Обучение руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820" },
+                    { name: "Ступень 1. Бизнес-игра по Наставничеству", url: "https://edu.korusconsulting.ru/course/view.php?id=1164" },
+                    { name: "Ступень 2. Я развиваю свой ДАР Наставничества", url: "https://edu.korusconsulting.ru/course/view.php?id=1165" }
+                ]
+            },
+            "Найм и оценка": {
+                korpus: [
+                    { name: "Школа Руководителя MONS", url: "https://edu.korusconsulting.ru/course/view.php?id=500" },
+                    { name: "ДАР: Обучение Руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820" }
+                ],
+                dar: [
+                    { name: "Обучение руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820" }
+                ]
+            }
+        },
+        "Презентации и обучение": {
+            "Презентация результатов": {
+                korpus: [
+                    { name: "Тренинг «Мастерство презентаций»", url: "https://edu.korusconsulting.ru/course/view.php?id=990" },
+                    { name: "KORUS Челлендж \"Делаем крутые слайды\"", url: "https://edu.korusconsulting.ru/course/view.php?id=100" },
+                    { name: "Подготовка презентаций и выступлений", url: "https://edu.korusconsulting.ru/course/view.php?id=1182" }
+                ],
+                dar: [
+                    { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160" },
+                    { name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161" }
+                ]
+            },
+            "Обучение пользователей": {
+                korpus: [
+                    { name: "Обучение сотрудников заказчика, проведение ОПЭ", url: "https://edu.korusconsulting.ru/course/view.php?id=705" },
+                    { name: "Обучение типовому функционалу Битрикс24", url: "https://edu.korusconsulting.ru/course/view.php?id=176" }
+                ],
+                dar: [
+                    { name: "Ступень 1. Бизнес-игра по Наставничеству", url: "https://edu.korusconsulting.ru/course/view.php?id=1164" }
+                ]
+            },
+            "Демо заказчику": {
+                korpus: [
+                    { name: "Чек-лист как провести демонстрацию программного продукта клиенту", url: "https://edu.korusconsulting.ru/course/view.php?id=740" },
+                    { name: "Проведение ПСИ/демонстраций (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=630" }
+                ],
+                dar: [
+                    { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160" }
+                ]
+            }
+        }
+    };
+
+    // Получаем список категорий и компетенций
+    const categories = Object.keys(data);
+
+    // Рендерим сайдбар с категориями
+    const categoryContainer = document.getElementById('categoryContainer');
+    let firstCompetence = null;
+
+    categories.forEach(category => {
+        const competences = Object.keys(data[category]);
+        // Заголовок категории
+        const catTitle = document.createElement('div');
+        catTitle.className = 'category-title';
+        catTitle.textContent = category;
+        categoryContainer.appendChild(catTitle);
+
+        const ul = document.createElement('ul');
+        competences.forEach(comp => {
+            const li = document.createElement('li');
+            li.textContent = comp;
+            li.dataset.competence = comp;
+            li.dataset.category = category;
+            li.addEventListener('click', function() {
+                // Снимаем активность со всех
+                document.querySelectorAll('#categoryContainer li').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+                renderCourses(comp);
+            });
+            ul.appendChild(li);
+            if (!firstCompetence) firstCompetence = comp;
+        });
+        categoryContainer.appendChild(ul);
+    });
+
+    // По умолчанию выбираем первую компетенцию
+    if (firstCompetence) {
+        const firstLi = document.querySelector(`#categoryContainer li[data-competence="${firstCompetence}"]`);
+        if (firstLi) {
+            firstLi.classList.add('active');
+            renderCourses(firstCompetence);
+        }
+    }
+
+    // Поиск
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const activeLi = document.querySelector('#categoryContainer li.active');
+        if (activeLi) {
+            const comp = activeLi.dataset.competence;
+            renderCourses(comp, this.value.trim());
+        }
+    });
+
+    function renderCourses(competence, searchTerm = '') {
+        const titleEl = document.getElementById('compTitle');
+        const container = document.getElementById('coursesContainer');
+
+        titleEl.textContent = competence;
+
+        // Находим компетенцию в данных
+        let found = null;
+        for (const category of categories) {
+            if (data[category][competence]) {
+                found = data[category][competence];
+                break;
+            }
+        }
+
+        if (!found) {
+            container.innerHTML = '<div class="empty-state">Нет данных для этой компетенции</div>';
+            return;
+        }
+
+        // Фильтрация по поиску
+        const filterFn = (item) => {
+            if (!searchTerm) return true;
+            return item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        };
+
+        const korpusFiltered = found.korpus.filter(filterFn);
+        const darFiltered = found.dar.filter(filterFn);
+
+        let html = '';
+
+        // Курсы КОРУС
+        if (korpusFiltered.length) {
+            html += `<div class="course-section"><h3>📘 Курсы КОРУС</h3><div class="course-grid">`;
+            korpusFiltered.forEach(c => {
+                html += `
+                    <div class="course-card">
+                        <a href="${c.url}" target="_blank">${c.name}</a>
+                        <div class="desc">${c.url}</div>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+        }
+
+        // Курсы ДАР
+        if (darFiltered.length) {
+            html += `<div class="course-section"><h3>📗 Курсы ДАР</h3><div class="course-grid">`;
+            darFiltered.forEach(c => {
+                html += `
+                    <div class="course-card">
+                        <a href="${c.url}" target="_blank">${c.name}</a>
+                        <div class="desc">${c.url}</div>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+        }
+
+        if (!html) {
+            html = '<div class="empty-state">По вашему запросу ничего не найдено</div>';
+        }
+
+        container.innerHTML = html;
+    }
+</script>
+</body>
+</html>
