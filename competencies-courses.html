@@ -130,12 +130,22 @@
             margin-bottom: 30px;
         }
 
+        /* Стили для заголовков с логотипами */
         .course-section h3 {
             font-size: 18px;
             color: #334155;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 8px;
             margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-logo {
+            height: 24px; /* Размер логотипа */
+            width: auto;
+            vertical-align: middle;
         }
 
         .course-grid {
@@ -197,13 +207,11 @@
     <h1>📚 Компетенции → курсы <small>выберите компетенцию</small></h1>
 
     <div class="layout">
-        <!-- Список компетенций с группировкой -->
         <div class="sidebar" id="competenceList">
             <h2>Компетенции</h2>
             <div id="categoryContainer"></div>
         </div>
 
-        <!-- Основная область -->
         <div class="main">
             <input type="text" class="search-box" id="searchInput" placeholder="Поиск по названию курса...">
             <div id="resultArea">
@@ -215,14 +223,14 @@
 </div>
 
 <script>
-    // Данные сгруппированы по категориям
+    // Данные сгруппированы по категориям (здесь ваши данные)
     const data = {
         "Сбор и анализ требований": {
             "Выявление и сбор требований": {
                 korpus: [
                     { name: "Проведение CustDev-ов", url: "https://edu.korusconsulting.ru/course/view.php?id=102" },
                     { name: "Воркшоп | Выбор лучших: Как проводить успешные интервью", url: "https://edu.korusconsulting.ru/course/view.php?id=568" },
-                    { name: "Вебибар “Пресейлы: как проводить успешные встречи с клиентами”", url: "https://edu.korusconsulting.ru/course/view.php?id=687" },
+                    { name: "Вебинар “Пресейлы: как проводить успешные встречи с клиентами”", url: "https://edu.korusconsulting.ru/course/view.php?id=687" },
                     { name: "Интервью с заказчиком: как произвести профессиональное впечатление", url: "https://edu.korusconsulting.ru/course/view.php?id=1330" }
                 ],
                 dar: [
@@ -582,7 +590,6 @@
 
     categories.forEach(category => {
         const competences = Object.keys(data[category]);
-        // Заголовок категории
         const catTitle = document.createElement('div');
         catTitle.className = 'category-title';
         catTitle.textContent = category;
@@ -595,7 +602,6 @@
             li.dataset.competence = comp;
             li.dataset.category = category;
             li.addEventListener('click', function() {
-                // Снимаем активность со всех
                 document.querySelectorAll('#categoryContainer li').forEach(el => el.classList.remove('active'));
                 this.classList.add('active');
                 renderCourses(comp);
@@ -630,7 +636,6 @@
 
         titleEl.textContent = competence;
 
-        // Находим компетенцию в данных
         let found = null;
         for (const category of categories) {
             if (data[category][competence]) {
@@ -644,7 +649,6 @@
             return;
         }
 
-        // Фильтрация по поиску
         const filterFn = (item) => {
             if (!searchTerm) return true;
             return item.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -655,9 +659,16 @@
 
         let html = '';
 
-        // Курсы КОРУС
+        // Курсы КОРУС с логотипом
         if (korpusFiltered.length) {
-            html += `<div class="course-section"><h3>📘 Курсы КОРУС</h3><div class="course-grid">`;
+            html += `
+                <div class="course-section">
+                    <h3>
+                        <img src="korus-logo.png" class="section-logo" alt="КОРУС" onerror="this.style.display='none'"> 
+                        Курсы КОРУС
+                    </h3>
+                    <div class="course-grid">
+            `;
             korpusFiltered.forEach(c => {
                 html += `
                     <div class="course-card">
@@ -669,9 +680,16 @@
             html += `</div></div>`;
         }
 
-        // Курсы ДАР
+        // Курсы ДАР с логотипом
         if (darFiltered.length) {
-            html += `<div class="course-section"><h3>📗 Курсы ДАР</h3><div class="course-grid">`;
+            html += `
+                <div class="course-section">
+                    <h3>
+                        <img src="dar-logo.png" class="section-logo" alt="ДАР" onerror="this.style.display='none'"> 
+                        Курсы ДАР
+                    </h3>
+                    <div class="course-grid">
+            `;
             darFiltered.forEach(c => {
                 html += `
                     <div class="course-card">
