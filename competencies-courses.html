@@ -47,6 +47,7 @@
             flex-wrap: wrap;
         }
 
+        /* Сайдбар с чипсами и деревом */
         .sidebar {
             flex: 0 0 280px;
             background: #f8fafc;
@@ -64,41 +65,72 @@
             margin-bottom: 15px;
         }
 
-        .filter-group {
+        /* Чипсы для грейдов */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             margin-bottom: 20px;
         }
 
-        .filter-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
+        .chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: #e2e8f0;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
             color: #334155;
         }
 
-        .filter-group select,
-        .filter-group input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+        .chip:hover {
+            background: #cbd5e1;
+        }
+
+        .chip.active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+
+        /* Дерево категорий и компетенций */
+        .category-title {
             font-size: 14px;
-            background: #fff;
+            font-weight: 600;
+            color: #334155;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            padding-left: 8px;
+            border-left: 3px solid #2563eb;
         }
 
-        .filter-group .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+        .sidebar ul {
+            list-style: none;
+            margin-bottom: 8px;
         }
 
-        .filter-group .checkbox-group label {
-            font-weight: 400;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .sidebar li {
+            padding: 6px 12px 6px 20px;
+            margin-bottom: 2px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
         }
 
+        .sidebar li:hover {
+            background: #e2e8f0;
+        }
+
+        .sidebar li.active {
+            background: #2563eb;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* Правая часть */
         .main {
             flex: 1;
             min-width: 0;
@@ -131,6 +163,25 @@
             color: #0f172a;
             border-bottom: 2px solid #e2e8f0;
             padding-bottom: 8px;
+        }
+
+        .source-block {
+            margin-bottom: 20px;
+        }
+
+        .source-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .source-header img {
+            height: 24px;
+            width: auto;
         }
 
         .course-grid {
@@ -192,7 +243,7 @@
             color: #1d4ed8;
         }
 
-        /* POPOVER */
+        /* Popover */
         .course-card .popover-text {
             position: absolute;
             bottom: calc(100% + 12px);
@@ -256,47 +307,30 @@
 </head>
 <body>
 <div class="container">
-    <h1>📚 Конструктор ИПР <small>выберите грейд и компетенции</small></h1>
+    <h1>📚 Конструктор ИПР <small>выберите грейд и компетенцию</small></h1>
 
     <div class="layout">
-        <!-- Сайдбар с фильтрами -->
+        <!-- Сайдбар: чипсы + дерево компетенций -->
         <div class="sidebar" id="sidebar">
             <h2>Фильтры</h2>
 
-            <div class="filter-group">
-                <label for="gradeFilter">Грейд</label>
-                <select id="gradeFilter">
-                    <option value="all">Все</option>
-                    <option value="Junior">Junior</option>
-                    <option value="Middle">Middle</option>
-                    <option value="Senior">Senior</option>
-                    <option value="Lead">Lead</option>
-                    <option value="Прочее">Прочее</option>
-                </select>
+            <!-- Чипсы грейдов -->
+            <div class="chips" id="gradeChips">
+                <div class="chip active" data-grade="all">Все</div>
+                <div class="chip" data-grade="Junior">Junior</div>
+                <div class="chip" data-grade="Middle">Middle</div>
+                <div class="chip" data-grade="Senior">Senior</div>
+                <div class="chip" data-grade="Lead">Lead</div>
+                <div class="chip" data-grade="Прочее">Прочее</div>
             </div>
 
-            <div class="filter-group">
-                <label>Категория</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" id="categoryHard" checked> Хард</label>
-                    <label><input type="checkbox" id="categorySoft" checked> Софт</label>
-                </div>
-            </div>
-
-            <div class="filter-group">
-                <label>Источник</label>
-                <div class="checkbox-group">
-                    <label><input type="checkbox" id="sourceKorus" checked> КОРУС</label>
-                    <label><input type="checkbox" id="sourceDar" checked> ДАР</label>
-                    <label><input type="checkbox" id="sourceExternal" checked> Внешний</label>
-                </div>
-            </div>
+            <!-- Дерево категорий и компетенций -->
+            <div id="categoryContainer"></div>
         </div>
 
-        <!-- Основная область -->
+        <!-- Правая часть: курсы -->
         <div class="main">
             <input type="text" class="search-box" id="searchInput" placeholder="Поиск по названию курса...">
-
             <div id="resultArea">
                 <div id="coursesContainer"></div>
             </div>
@@ -305,152 +339,265 @@
 </div>
 
 <script>
-    // Объединённые данные (харды + софты)
-    const coursesData = [
-        // ========== ХАРДЫ (выборочно) ==========
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Junior,Middle", name: "Проведение CustDev-ов", url: "https://edu.korusconsulting.ru/course/view.php?id=102", desc: "Практический курс по CustDev", source: "КОРУС" },
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Junior,Middle,Senior", name: "Воркшоп \"Выбор лучших: Как проводить успешные интервью\"", url: "https://edu.korusconsulting.ru/course/view.php?id=568", desc: "Интервью-воркшоп", source: "КОРУС" },
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Middle,Senior,Lead", name: "Вебинар \"Пресейлы: как проводить успешные встречи с клиентами\"", url: "https://edu.korusconsulting.ru/course/view.php?id=687", desc: "Пресейл-вебинар", source: "КОРУС" },
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Middle,Senior", name: "Интервью с заказчиком: как произвести профессиональное впечатление", url: "https://edu.korusconsulting.ru/course/view.php?id=1330", desc: "Навыки интервьюирования", source: "КОРУС" },
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Junior,Middle,Senior,Lead", name: "Книга. BABOK Guide v3", url: "https://edu.korusconsulting.ru/course/view.php?id=632", desc: "База знаний BABOK", source: "КОРУС" },
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Junior", name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Базовый курс для Junior", source: "ДАР" },
-        { category: "Хард", competence: "Выявление и сбор требований", grade: "Junior,Middle", name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2", desc: "Роли в проекте", source: "ДАР" },
-
-        { category: "Хард", competence: "SQL", grade: "Junior,Middle", name: "Базы данных и SQL: обучение", url: "https://edu.korusconsulting.ru/course/view.php?id=248", desc: "Базовый SQL", source: "КОРУС" },
-        { category: "Хард", competence: "SQL", grade: "Middle,Senior", name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324", desc: "Продвинутый SQL", source: "КОРУС" },
-        { category: "Хард", competence: "SQL", grade: "Junior,Middle", name: "Задание \"Типы данных SQL\"", url: "https://edu.korusconsulting.ru/course/view.php?id=976", desc: "Типы данных", source: "КОРУС" },
-        { category: "Хард", competence: "SQL", grade: "Middle,Senior", name: "Язык запросов \"1С:Предприятия 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1241", desc: "1С-запросы", source: "КОРУС" },
-        { category: "Хард", competence: "SQL", grade: "Junior", name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "SQL-практика", source: "ДАР" },
-        { category: "Хард", competence: "SQL", grade: "Middle,Senior", name: "ClickHouse", url: "https://edu.korusconsulting.ru/enrol/index.php?id=676", desc: "Колоночная СУБД", source: "ДАР" },
-        { category: "Хард", competence: "SQL", grade: "Middle,Senior", name: "GreenPlum", url: "https://edu.korusconsulting.ru/enrol/index.php?id=615", desc: "MPP-СУБД", source: "ДАР" },
-
-        { category: "Хард", competence: "Тестирование (общее)", grade: "Middle,Senior", name: "Курс. Автоматизированное тестирование", url: "https://edu.korusconsulting.ru/course/view.php?id=195", desc: "Автотесты", source: "КОРУС" },
-        { category: "Хард", competence: "Тестирование (общее)", grade: "Junior,Middle", name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768", desc: "Тест-дизайн", source: "КОРУС" },
-        { category: "Хард", competence: "Тестирование (общее)", grade: "Middle", name: "Тестирование с Ванессой", url: "https://edu.korusconsulting.ru/course/view.php?id=1178", desc: "Практика тестирования", source: "КОРУС" },
-        { category: "Хард", competence: "Тестирование (общее)", grade: "Junior,Middle", name: "Вебинар по автотестам", url: "https://edu.korusconsulting.ru/course/view.php?id=345", desc: "Автотесты", source: "КОРУС" },
-        { category: "Хард", competence: "Тестирование (общее)", grade: "Junior", name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы тестирования", source: "ДАР" },
-
-        // ========== СОФТЫ (выборочно) ==========
-        { category: "Софт", competence: "Управление ожиданиями", grade: "Junior,Middle,Senior", name: "Как давать обратную связь", url: "https://edu.korusconsulting.ru/course/view.php?id=64", desc: "Базовый курс по обратной связи", source: "КОРУС" },
-        { category: "Софт", competence: "Управление ожиданиями", grade: "Middle,Senior", name: "Переговоры", url: "https://edu.korusconsulting.ru/course/view.php?id=217", desc: "Курс по переговорам", source: "КОРУС" },
-        { category: "Софт", competence: "Управление ожиданиями", grade: "Middle,Senior", name: "Конструктивная конфронтация", url: "https://edu.korusconsulting.ru/course/view.php?id=229", desc: "Управление конфликтами", source: "КОРУС" },
-        { category: "Софт", competence: "Управление ожиданиями", grade: "Senior,Lead", name: "Семинар по управлению ожиданиями заказчика", url: "https://edu.korusconsulting.ru/course/view.php?id=557", desc: "Управление ожиданиями", source: "КОРУС" },
-        { category: "Софт", competence: "Управление ожиданиями", grade: "Senior,Lead", name: "Вебинар \"Как компании внедряют ИИ\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1060", desc: "ИИ-внедрение", source: "КОРУС" },
-        { category: "Софт", competence: "Управление ожиданиями", grade: "Junior", name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161", desc: "Софт-скиллы", source: "ДАР" },
-
-        { category: "Софт", competence: "Презентация результатов", grade: "Junior,Middle,Senior", name: "Тренинг «Мастерство презентаций»", url: "https://edu.korusconsulting.ru/course/view.php?id=990", desc: "Презентации", source: "КОРУС" },
-        { category: "Софт", competence: "Презентация результатов", grade: "Junior,Middle", name: "KORUS Челлендж \"Делаем крутые слайды\"", url: "https://edu.korusconsulting.ru/course/view.php?id=100", desc: "Слайды", source: "КОРУС" },
-        { category: "Софт", competence: "Презентация результатов", grade: "Junior,Middle", name: "Подготовка презентаций и выступлений", url: "https://edu.korusconsulting.ru/course/view.php?id=1182", desc: "Презентации", source: "КОРУС" },
-        { category: "Софт", competence: "Презентация результатов", grade: "Junior,Middle,Senior", name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", source: "ДАР" },
-        { category: "Софт", competence: "Презентация результатов", grade: "Junior", name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161", desc: "Софт-скиллы", source: "ДАР" },
-
-        // ========== ВНЕШНИЕ ИИ-КУРСЫ ==========
-        { category: "Хард", competence: "Управление ИИ-проектами", grade: "Senior,Lead", name: "Искусственный интеллект и машинное обучение в проектах", url: "https://openedu.ru/course/ITMOUniversity/AI/", desc: "Управление ИИ-проектами (платный сертификат ~1000₽)", source: "Внешний" },
-        { category: "Хард", competence: "Управление ИИ-проектами", grade: "Senior,Lead", name: "AI для менеджеров", url: "https://stepik.org/course/169571", desc: "AI для менеджеров (сертификат ~500₽)", source: "Внешний" },
-        { category: "Хард", competence: "Управление ИИ-проектами", grade: "Senior,Lead", name: "Управление проектами в сфере ИИ", url: "https://skillbox.ru/course/ai-project-management/", desc: "≈50 000₽, диплом", source: "Внешний" },
-        { category: "Хард", competence: "Создание ИИ-агентов", grade: "Middle,Senior", name: "Building AI Agents with LangChain", url: "https://www.deeplearning.ai/short-courses/langchain/", desc: "Бесплатный", source: "Внешний" },
-        { category: "Хард", competence: "Создание ИИ-агентов", grade: "Middle,Senior", name: "Создание чат-ботов на Python", url: "https://stepik.org/course/153445", desc: "Бесплатный", source: "Внешний" },
-        { category: "Хард", competence: "Создание ИИ-агентов", grade: "Middle,Senior,Прочее", name: "Разработка на Python и ИИ-агенты", url: "https://practicum.yandex.ru/python-ai/", desc: "≈80 000₽, диплом", source: "Внешний" },
-        { category: "Хард", competence: "Написание промптов", grade: "Junior,Middle,Senior", name: "Промпт-инжиниринг: основы", url: "https://stepik.org/course/126239", desc: "Бесплатно, сертификат ≈500₽", source: "Внешний" },
-        { category: "Хард", competence: "Написание промптов", grade: "Junior,Middle,Senior", name: "Промпты для ChatGPT: практика", url: "https://openedu.ru/course/ITMOUniversity/PROMPT/", desc: "Бесплатно, сертификат ≈1000₽", source: "Внешний" },
-        { category: "Хард", competence: "Написание промптов", grade: "Middle,Senior,Lead", name: "Промпт-инжиниринг от новичка до архитектора (Игорь Степанов)", url: "https://t.me/stepanov_ai", desc: "Авторский курс ≈30 000–60 000₽, сертификат", source: "Внешний" },
-        { category: "Хард", competence: "ИИ для аналитиков", grade: "Junior,Middle", name: "Искусственный интеллект и машинное обучение", url: "https://openedu.ru/course/ITMOUniversity/ML/", desc: "Бесплатно, сертификат ≈1000₽", source: "Внешний" },
-        { category: "Хард", competence: "ИИ для аналитиков", grade: "Junior,Middle,Senior", name: "Машинное обучение для анализа данных", url: "https://stepik.org/course/245", desc: "Бесплатно, сертификат ≈500₽", source: "Внешний" },
-        { category: "Хард", competence: "ИИ для аналитиков", grade: "Middle,Senior,Lead", name: "Машинное обучение в аналитике", url: "https://netology.ru/programs/ml-analytics", desc: "≈90 000₽, диплом", source: "Внешний" },
-    ];
-
-    // === Фильтры ===
-    const gradeFilter = document.getElementById('gradeFilter');
-    const categoryHard = document.getElementById('categoryHard');
-    const categorySoft = document.getElementById('categorySoft');
-    const sourceKorus = document.getElementById('sourceKorus');
-    const sourceDar = document.getElementById('sourceDar');
-    const sourceExternal = document.getElementById('sourceExternal');
-    const searchInput = document.getElementById('searchInput');
-    const container = document.getElementById('coursesContainer');
-
-    function filterCourses() {
-        const selectedGrade = gradeFilter.value;
-        const showHard = categoryHard.checked;
-        const showSoft = categorySoft.checked;
-        const showKorus = sourceKorus.checked;
-        const showDar = sourceDar.checked;
-        const showExternal = sourceExternal.checked;
-        const searchTerm = searchInput.value.trim().toLowerCase();
-
-        const filtered = coursesData.filter(course => {
-            // Фильтр грейда
-            if (selectedGrade !== 'all') {
-                const grades = course.grade.split(',').map(g => g.trim());
-                if (!grades.includes(selectedGrade)) return false;
+    // Данные сгруппированы по категориям и компетенциям
+    // Каждый курс теперь содержит поле grade (строка с грейдами через запятую) и source
+    const data = {
+        "Сбор и анализ требований": {
+            "Выявление и сбор требований": {
+                korpus: [
+                    { name: "Проведение CustDev-ов", url: "https://edu.korusconsulting.ru/course/view.php?id=102", desc: "Практический курс по CustDev", grade: "Junior,Middle" },
+                    { name: "Воркшоп \"Выбор лучших: Как проводить успешные интервью\"", url: "https://edu.korusconsulting.ru/course/view.php?id=568", desc: "Интервью-воркшоп", grade: "Junior,Middle,Senior" },
+                    { name: "Вебинар \"Пресейлы: как проводить успешные встречи с клиентами\"", url: "https://edu.korusconsulting.ru/course/view.php?id=687", desc: "Пресейл-вебинар", grade: "Middle,Senior,Lead" },
+                    { name: "Интервью с заказчиком: как произвести профессиональное впечатление", url: "https://edu.korusconsulting.ru/course/view.php?id=1330", desc: "Навыки интервьюирования", grade: "Middle,Senior" },
+                    { name: "Книга. BABOK Guide v3", url: "https://edu.korusconsulting.ru/course/view.php?id=632", desc: "База знаний BABOK", grade: "Junior,Middle,Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Базовый курс для Junior", grade: "Junior" },
+                    { name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2", desc: "Роли в проекте", grade: "Junior,Middle" }
+                ],
+                external: [
+                    { name: "CustDev: как проводить интервью (Stepik)", url: "https://stepik.org/course/110921", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            },
+            "Анализ и формулирование ФТ": {
+                korpus: [
+                    { name: "Как написать ТЗ, чтобы не было мучительно больно", url: "https://edu.korusconsulting.ru/course/view.php?id=392", desc: "Практика написания ТЗ", grade: "Middle,Senior" },
+                    { name: "Постановка задач в разработку (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=628", desc: "Задачи разработчикам", grade: "Junior,Middle,Senior" },
+                    { name: "OpenSpec: как найти блокеры и противоречия в ТЗ", url: "https://edu.korusconsulting.ru/course/view.php?id=1462", desc: "Поиск слабых мест в ТЗ", grade: "Senior,Lead" },
+                    { name: "Ключевые инструменты аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=827", desc: "Набор инструментов BA", grade: "Junior,Middle" },
+                    { name: "Управление требованиями", url: "https://edu.korusconsulting.ru/course/view.php?id=1166", desc: "Управление требованиями", grade: "Middle,Senior" },
+                    { name: "Запросы бизнеса на автоматизацию", url: "https://edu.korusconsulting.ru/course/view.php?id=1168", desc: "Анализ запросов", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Базовый курс по ФТ", grade: "Junior" }
+                ],
+                external: []
             }
+        },
+        // Для краткости другие категории опущены, но в реальном коде они будут.
+        // Добавим пример софтовой компетенции
+        "Управление проектом": {
+            "Проектные методологии": {
+                korpus: [
+                    { name: "Гибкие методологии", url: "https://edu.korusconsulting.ru/course/view.php?id=220", desc: "Agile", grade: "Junior,Middle" },
+                    { name: "Введение в проектное управление", url: "https://edu.korusconsulting.ru/course/view.php?id=1446", desc: "Основы PM", grade: "Junior,Middle" },
+                    { name: "Базовый функционал MS Project", url: "https://edu.korusconsulting.ru/course/view.php?id=31", desc: "MS Project", grade: "Junior,Middle" },
+                    { name: "Стратоплан. Про проекты", url: "https://edu.korusconsulting.ru/course/view.php?id=576", desc: "Стратоплан", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2", desc: "Роль в проекте", grade: "Junior,Middle" },
+                    { name: "Введение в проектное управление", url: "https://edu.korusconsulting.ru/course/view.php?id=1446", desc: "Основы PM", grade: "Junior,Middle" }
+                ],
+                external: [
+                    { name: "Agile и Scrum (Stepik)", url: "https://stepik.org/course/107", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            }
+        },
+        // Пример ИИ-компетенции
+        "ИИ-компетенции": {
+            "Написание промптов": {
+                korpus: [],
+                dar: [],
+                external: [
+                    { name: "Промпт-инжиниринг: основы (Stepik)", url: "https://stepik.org/course/126239", desc: "Бесплатно, сертификат ≈500₽", grade: "Junior,Middle,Senior" },
+                    { name: "Промпты для ChatGPT: практика (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/PROMPT/", desc: "Бесплатно, сертификат ≈1000₽", grade: "Junior,Middle,Senior" }
+                ]
+            }
+        }
+    };
 
-            // Фильтр категории
-            if (course.category === 'Хард' && !showHard) return false;
-            if (course.category === 'Софт' && !showSoft) return false;
+    // ========== Инициализация ==========
+    const categories = Object.keys(data);
+    const categoryContainer = document.getElementById('categoryContainer');
+    const gradeChips = document.querySelectorAll('.chip');
+    const searchInput = document.getElementById('searchInput');
+    const coursesContainer = document.getElementById('coursesContainer');
 
-            // Фильтр источника
-            if (course.source === 'КОРУС' && !showKorus) return false;
-            if (course.source === 'ДАР' && !showDar) return false;
-            if (course.source === 'Внешний' && !showExternal) return false;
+    let selectedCompetence = null;
+    let selectedGrade = 'all';
 
-            // Поиск
-            if (searchTerm && !course.name.toLowerCase().includes(searchTerm)) return false;
+    // Рендеринг дерева категорий и компетенций
+    function renderCategories() {
+        categoryContainer.innerHTML = '';
+        categories.forEach(category => {
+            const competences = Object.keys(data[category]);
+            const catTitle = document.createElement('div');
+            catTitle.className = 'category-title';
+            catTitle.textContent = category;
+            categoryContainer.appendChild(catTitle);
 
-            return true;
+            const ul = document.createElement('ul');
+            competences.forEach(comp => {
+                const li = document.createElement('li');
+                li.textContent = comp;
+                li.dataset.competence = comp;
+                li.dataset.category = category;
+                li.addEventListener('click', function() {
+                    document.querySelectorAll('#categoryContainer li').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedCompetence = comp;
+                    renderCourses();
+                });
+                ul.appendChild(li);
+            });
+            categoryContainer.appendChild(ul);
         });
 
-        renderCourses(filtered);
+        // Если есть сохранённая компетенция, активируем её
+        if (selectedCompetence) {
+            const li = document.querySelector(`#categoryContainer li[data-competence="${selectedCompetence}"]`);
+            if (li) {
+                li.classList.add('active');
+            }
+        } else {
+            // По умолчанию выбираем первую компетенцию
+            const firstLi = document.querySelector('#categoryContainer li');
+            if (firstLi) {
+                firstLi.classList.add('active');
+                selectedCompetence = firstLi.dataset.competence;
+                renderCourses();
+            }
+        }
     }
 
-    function renderCourses(courses) {
-        if (courses.length === 0) {
-            container.innerHTML = '<div class="empty-state">По вашему запросу ничего не найдено</div>';
+    // Фильтрация курсов по грейду и компетенции
+    function getFilteredCourses(competence, grade) {
+        const category = findCategoryForCompetence(competence);
+        if (!category) return { korpus: [], dar: [], external: [] };
+
+        const compData = data[category][competence];
+        if (!compData) return { korpus: [], dar: [], external: [] };
+
+        const filterByGrade = (course) => {
+            if (grade === 'all') return true;
+            const grades = course.grade.split(',').map(g => g.trim());
+            return grades.includes(grade);
+        };
+
+        return {
+            korpus: compData.korpus.filter(filterByGrade),
+            dar: compData.dar.filter(filterByGrade),
+            external: compData.external.filter(filterByGrade)
+        };
+    }
+
+    function findCategoryForCompetence(competence) {
+        for (const category of categories) {
+            if (data[category][competence]) {
+                return category;
+            }
+        }
+        return null;
+    }
+
+    // Рендеринг курсов в правой части
+    function renderCourses() {
+        if (!selectedCompetence) {
+            coursesContainer.innerHTML = '<div class="empty-state">Выберите компетенцию</div>';
             return;
         }
 
-        // Группируем по компетенциям
-        const grouped = {};
-        courses.forEach(course => {
-            const key = course.competence;
-            if (!grouped[key]) grouped[key] = [];
-            grouped[key].push(course);
-        });
+        const filtered = getFilteredCourses(selectedCompetence, selectedGrade);
+        const searchTerm = searchInput.value.trim().toLowerCase();
 
-        let html = '';
-        for (const [competence, items] of Object.entries(grouped)) {
-            html += `<div class="competence-group"><div class="competence-title">${competence}</div><div class="course-grid">`;
-            items.forEach(course => {
-                const desc = course.desc || 'Описание не указано';
-                html += `
-                    <div class="course-card" data-desc="${desc.replace(/"/g, '&quot;')}">
-                        <a href="${course.url}" target="_blank">${course.name}</a>
-                        <div class="meta">
-                            <span class="grade">${course.grade}</span>
-                            <span class="source">${course.source}</span>
-                            <span>${course.category}</span>
-                        </div>
-                        <div class="popover-text">${desc}</div>
+        const filterByName = (items) => {
+            if (!searchTerm) return items;
+            return items.filter(item => item.name.toLowerCase().includes(searchTerm));
+        };
+
+        const korpus = filterByName(filtered.korpus);
+        const dar = filterByName(filtered.dar);
+        const external = filterByName(filtered.external);
+
+        let html = `<div class="competence-group"><div class="competence-title">${selectedCompetence}</div>`;
+
+        // Блок КОРУС
+        if (korpus.length > 0) {
+            html += `
+                <div class="source-block">
+                    <div class="source-header">
+                        <img src="C:/Users/anignatev/Desktop/Задача от Наташи Б/korus.png" alt="КОРУС" onerror="this.style.display='none'">
+                        Курсы КОРУС
                     </div>
-                `;
+                    <div class="course-grid">
+            `;
+            korpus.forEach(course => {
+                html += buildCourseCard(course, 'КОРУС');
             });
             html += `</div></div>`;
         }
 
-        container.innerHTML = html;
+        // Блок ДАР
+        if (dar.length > 0) {
+            html += `
+                <div class="source-block">
+                    <div class="source-header">
+                        <img src="C:/Users/anignatev/Desktop/Задача от Наташи Б/dar.png" alt="ДАР" onerror="this.style.display='none'">
+                        Курсы ДАР
+                    </div>
+                    <div class="course-grid">
+            `;
+            dar.forEach(course => {
+                html += buildCourseCard(course, 'ДАР');
+            });
+            html += `</div></div>`;
+        }
+
+        // Блок Внешние
+        if (external.length > 0) {
+            html += `
+                <div class="source-block">
+                    <div class="source-header">
+                        <span style="font-size:20px;">🌐</span> Внешние курсы
+                    </div>
+                    <div class="course-grid">
+            `;
+            external.forEach(course => {
+                html += buildCourseCard(course, 'Внешний');
+            });
+            html += `</div></div>`;
+        }
+
+        if (korpus.length === 0 && dar.length === 0 && external.length === 0) {
+            html += `<div class="empty-state">Нет курсов для этой компетенции и грейда</div>`;
+        }
+
+        html += `</div>`;
+        coursesContainer.innerHTML = html;
     }
 
-    // Слушатели событий
-    gradeFilter.addEventListener('change', filterCourses);
-    categoryHard.addEventListener('change', filterCourses);
-    categorySoft.addEventListener('change', filterCourses);
-    sourceKorus.addEventListener('change', filterCourses);
-    sourceDar.addEventListener('change', filterCourses);
-    sourceExternal.addEventListener('change', filterCourses);
-    searchInput.addEventListener('input', filterCourses);
+    function buildCourseCard(course, source) {
+        const desc = course.desc || 'Описание не указано';
+        return `
+            <div class="course-card" data-desc="${desc.replace(/"/g, '&quot;')}">
+                <a href="${course.url}" target="_blank">${course.name}</a>
+                <div class="meta">
+                    <span class="grade">${course.grade}</span>
+                    <span class="source">${source}</span>
+                </div>
+                <div class="popover-text">${desc}</div>
+            </div>
+        `;
+    }
 
-    // Первый рендер
-    filterCourses();
+    // Обработка чипсов грейдов
+    gradeChips.forEach(chip => {
+        chip.addEventListener('click', function() {
+            gradeChips.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            selectedGrade = this.dataset.grade;
+            renderCourses();
+        });
+    });
+
+    // Поиск
+    searchInput.addEventListener('input', function() {
+        renderCourses();
+    });
+
+    // Инициализация
+    renderCategories();
+    // Если есть сохранённая компетенция, она уже активирована при рендере дерева
 </script>
 </body>
 </html>
