@@ -47,7 +47,6 @@
             flex-wrap: wrap;
         }
 
-        /* Сайдбар с чипсами и деревом */
         .sidebar {
             flex: 0 0 280px;
             background: #f8fafc;
@@ -65,7 +64,6 @@
             margin-bottom: 15px;
         }
 
-        /* Чипсы для грейдов */
         .chips {
             display: flex;
             flex-wrap: wrap;
@@ -95,7 +93,6 @@
             border-color: #2563eb;
         }
 
-        /* Дерево категорий и компетенций */
         .category-title {
             font-size: 14px;
             font-weight: 600;
@@ -130,7 +127,6 @@
             font-weight: 500;
         }
 
-        /* Правая часть */
         .main {
             flex: 1;
             min-width: 0;
@@ -243,7 +239,6 @@
             color: #1d4ed8;
         }
 
-        /* Popover */
         .course-card .popover-text {
             position: absolute;
             bottom: calc(100% + 12px);
@@ -310,11 +305,9 @@
     <h1>📚 Конструктор ИПР <small>выберите грейд и компетенцию</small></h1>
 
     <div class="layout">
-        <!-- Сайдбар: чипсы + дерево компетенций -->
         <div class="sidebar" id="sidebar">
             <h2>Фильтры</h2>
 
-            <!-- Чипсы грейдов -->
             <div class="chips" id="gradeChips">
                 <div class="chip active" data-grade="all">Все</div>
                 <div class="chip" data-grade="Junior">Junior</div>
@@ -324,11 +317,9 @@
                 <div class="chip" data-grade="Прочее">Прочее</div>
             </div>
 
-            <!-- Дерево категорий и компетенций -->
             <div id="categoryContainer"></div>
         </div>
 
-        <!-- Правая часть: курсы -->
         <div class="main">
             <input type="text" class="search-box" id="searchInput" placeholder="Поиск по названию курса...">
             <div id="resultArea">
@@ -339,8 +330,7 @@
 </div>
 
 <script>
-    // Данные сгруппированы по категориям и компетенциям
-    // Каждый курс теперь содержит поле grade (строка с грейдами через запятую) и source
+    // Полный объект данных со всеми категориями и компетенциями
     const data = {
         "Сбор и анализ требований": {
             "Выявление и сбор требований": {
@@ -372,10 +362,264 @@
                     { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Базовый курс по ФТ", grade: "Junior" }
                 ],
                 external: []
+            },
+            "Анализ и формулирование НФТ": {
+                korpus: [
+                    { name: "Тестирование. Зачем аналитику тестировать разработку?", url: "https://edu.korusconsulting.ru/course/view.php?id=703", desc: "Роль тестирования", grade: "Middle,Senior" },
+                    { name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768", desc: "Тест-дизайн", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Основы информационной безопасности", url: "https://edu.korusconsulting.ru/course/view.php?id=978", desc: "Безопасность как НФТ", grade: "Junior,Middle" },
+                    { name: "Обработка персональных данных", url: "https://edu.korusconsulting.ru/course/view.php?id=985", desc: "ПДн", grade: "Junior,Middle" }
+                ],
+                external: []
+            },
+            "Моделирование процессов": {
+                korpus: [
+                    { name: "Анна Вичугова - BPMN для людей", url: "https://edu.korusconsulting.ru/course/view.php?id=577", desc: "BPMN-нотация", grade: "Junior,Middle" },
+                    { name: "Моделирование и автоматизация бизнес-процессов", url: "https://edu.korusconsulting.ru/course/view.php?id=219", desc: "Автоматизация БП", grade: "Middle,Senior" },
+                    { name: "UML в Архитектуре, Аналитике и Разработке", url: "https://edu.korusconsulting.ru/course/view.php?id=760", desc: "UML", grade: "Middle,Senior" },
+                    { name: "BPMN", url: "https://edu.korusconsulting.ru/course/view.php?id=1344", desc: "Спецкурс по BPMN", grade: "Junior,Middle" },
+                    { name: "Бизнес-процессы: от хаоса к порядку", url: "https://edu.korusconsulting.ru/course/view.php?id=1247", desc: "Оптимизация процессов", grade: "Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Моделирование", grade: "Junior" }
+                ],
+                external: []
             }
         },
-        // Для краткости другие категории опущены, но в реальном коде они будут.
-        // Добавим пример софтовой компетенции
+        "Проектирование и разработка": {
+            "Бизнес-глоссарий / логическая модель данных": {
+                korpus: [
+                    { name: "Задание \"Модели данных и проектирование\"", url: "https://edu.korusconsulting.ru/course/view.php?id=949", desc: "Практика по моделированию", grade: "Middle,Senior" },
+                    { name: "Задание \"Проектирование ФМД\"", url: "https://edu.korusconsulting.ru/course/view.php?id=977", desc: "Проектирование ФМД", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы глоссария", grade: "Junior" }
+                ],
+                external: []
+            },
+            "Модель данных": {
+                korpus: [
+                    { name: "ER-диаграмма (тест)", url: "https://edu.korusconsulting.ru/course/view.php?id=951", desc: "Тест по ER", grade: "Junior,Middle" },
+                    { name: "Задание \"ER-диаграмма\"", url: "https://edu.korusconsulting.ru/course/view.php?id=950", desc: "Практика ER", grade: "Middle" },
+                    { name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324", desc: "Продвинутый SQL", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы моделей", grade: "Junior" },
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "Глубокие модели", grade: "Middle,Senior" }
+                ],
+                external: []
+            },
+            "Требования к интеграции": {
+                korpus: [
+                    { name: "Интеграции REST", url: "https://edu.korusconsulting.ru/course/view.php?id=1391", desc: "REST API", grade: "Middle,Senior" },
+                    { name: "Интеграционные возможности 1С:Документооборот 3.0", url: "https://edu.korusconsulting.ru/course/view.php?id=618", desc: "Интеграции 1С", grade: "Middle,Senior" },
+                    { name: "Тест \"Стили интеграции\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1409", desc: "Стили интеграций", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Apache Kafka", url: "https://edu.korusconsulting.ru/course/view.php?id=1157", desc: "Потоковые данные", grade: "Middle,Senior,Прочее" }
+                ],
+                external: []
+            },
+            "S2T (Source-to-Target)": {
+                korpus: [
+                    { name: "Задание \"Архитектура КХД\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1357", desc: "Проектирование КХД", grade: "Senior,Lead" },
+                    { name: "DBT", url: "https://edu.korusconsulting.ru/course/view.php?id=1159", desc: "ELT-пайплайны", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "DBT", url: "https://edu.korusconsulting.ru/course/view.php?id=1159", desc: "ELT-пайплайны", grade: "Middle,Senior" },
+                    { name: "Apache Airflow", url: "https://edu.korusconsulting.ru/enrol/index.php?id=1022", desc: "Оркестрация пайплайнов", grade: "Middle,Senior" }
+                ],
+                external: []
+            },
+            "Постановка на разработку": {
+                korpus: [
+                    { name: "Постановка задач для разработчиков", url: "https://edu.korusconsulting.ru/course/view.php?id=698", desc: "Постановка задач", grade: "Middle,Senior" },
+                    { name: "Задание \"Стандарты разработки, naming convention\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1033", desc: "Стандарты", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Инструкция пользователя Youtrack", url: "https://edu.korusconsulting.ru/course/view.php?id=495", desc: "Инструмент Jira", grade: "Junior,Middle" },
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Постановка задач", grade: "Junior" }
+                ],
+                external: []
+            }
+        },
+        "Тестирование": {
+            "Тестирование (общее)": {
+                korpus: [
+                    { name: "Курс. Автоматизированное тестирование", url: "https://edu.korusconsulting.ru/course/view.php?id=195", desc: "Автотесты", grade: "Middle,Senior" },
+                    { name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768", desc: "Тест-дизайн", grade: "Junior,Middle" },
+                    { name: "Тестирование с Ванессой", url: "https://edu.korusconsulting.ru/course/view.php?id=1178", desc: "Практика тестирования", grade: "Middle" },
+                    { name: "Вебинар по автотестам", url: "https://edu.korusconsulting.ru/course/view.php?id=345", desc: "Автотесты", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы тестирования", grade: "Junior" }
+                ],
+                external: [
+                    { name: "Основы тестирования ПО (Stepik)", url: "https://stepik.org/course/582", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            }
+        },
+        "Анализ данных": {
+            "SQL": {
+                korpus: [
+                    { name: "Базы данных и SQL: обучение", url: "https://edu.korusconsulting.ru/course/view.php?id=248", desc: "Базовый SQL", grade: "Junior,Middle" },
+                    { name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324", desc: "Продвинутый SQL", grade: "Middle,Senior" },
+                    { name: "Задание \"Типы данных SQL\"", url: "https://edu.korusconsulting.ru/course/view.php?id=976", desc: "Типы данных", grade: "Junior,Middle" },
+                    { name: "Язык запросов \"1С:Предприятия 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1241", desc: "1С-запросы", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "SQL-практика", grade: "Junior" },
+                    { name: "ClickHouse", url: "https://edu.korusconsulting.ru/enrol/index.php?id=676", desc: "Колоночная СУБД", grade: "Middle,Senior" },
+                    { name: "GreenPlum", url: "https://edu.korusconsulting.ru/enrol/index.php?id=615", desc: "MPP-СУБД", grade: "Middle,Senior" }
+                ],
+                external: [
+                    { name: "SQL для начинающих (Stepik)", url: "https://stepik.org/course/63054", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            },
+            "Основы статистики": {
+                korpus: [
+                    { name: "Математические инструменты в \"1С:Предприятие 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=81", desc: "Математика в 1С", grade: "Middle,Senior" },
+                    { name: "Книга. Джордан Морроу - Как вытащить из данных максимум", url: "https://edu.korusconsulting.ru/course/view.php?id=588", desc: "Анализ данных", grade: "Junior,Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Машинное обучение (ML)", url: "https://edu.korusconsulting.ru/course/view.php?id=1240", desc: "Введение в ML", grade: "Middle,Senior" },
+                    { name: "Apache Spark", url: "https://edu.korusconsulting.ru/enrol/index.php?id=487", desc: "Обработка больших данных", grade: "Senior,Lead" }
+                ],
+                external: [
+                    { name: "Статистика для анализа данных (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/STAT/", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            },
+            "Качество данных": {
+                korpus: [
+                    { name: "Задание \"Показатели качества данных\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1041", desc: "DQ-метрики", grade: "Middle,Senior" },
+                    { name: "Тестирование по Data Quality", url: "https://edu.korusconsulting.ru/course/view.php?id=1349", desc: "DQ-тесты", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "DQ-основы", grade: "Junior" }
+                ],
+                external: [
+                    { name: "Data Quality Fundamentals (Datacamp)", url: "https://www.datacamp.com/courses/data-quality-fundamentals", desc: "Бесплатно с базовой подпиской", grade: "Junior,Middle" }
+                ]
+            }
+        },
+        "Работа с документами": {
+            "Документирование": {
+                korpus: [
+                    { name: "Проектная документация работа с корпоративным шаблоном (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=629", desc: "Шаблоны документации", grade: "Junior,Middle" },
+                    { name: "Шаблоны документов", url: "https://edu.korusconsulting.ru/course/view.php?id=1019", desc: "Библиотека шаблонов", grade: "Junior,Middle" },
+                    { name: "Инструкция по составлению протоколов (мемо)", url: "https://edu.korusconsulting.ru/course/view.php?id=757", desc: "Протоколы встреч", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы документирования", grade: "Junior" },
+                    { name: "Инструкция пользователя Youtrack", url: "https://edu.korusconsulting.ru/course/view.php?id=495", desc: "Jira-документация", grade: "Junior,Middle" }
+                ],
+                external: []
+            },
+            "Редактура и текст": {
+                korpus: [
+                    { name: "Курс «Идеальный русский»", url: "https://edu.korusconsulting.ru/course/view.php?id=300", desc: "Грамотность", grade: "Junior,Middle" },
+                    { name: "Микрокурс \"Деловая переписка\"", url: "https://edu.korusconsulting.ru/course/view.php?id=558", desc: "Деловая переписка", grade: "Junior,Middle" },
+                    { name: "Микрокурс \"Как общаться в мессенджерах\"", url: "https://edu.korusconsulting.ru/course/view.php?id=525", desc: "Мессенджеры", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Деловая переписка. Часть 1", url: "https://edu.korusconsulting.ru/enrol/index.php?id=558", desc: "Часть 1", grade: "Junior,Middle" },
+                    { name: "Деловая переписка: забота и уважение Часть 2", url: "https://edu.korusconsulting.ru/enrol/index.php?id=617", desc: "Часть 2", grade: "Middle,Senior" },
+                    { name: "Как общаться в мессенджерах", url: "https://edu.korusconsulting.ru/course/view.php?id=525", desc: "Мессенджеры", grade: "Junior,Middle" }
+                ],
+                external: [
+                    { name: "Курс «Идеальный русский» (Stepik)", url: "https://stepik.org/course/394", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            }
+        },
+        "Макетирование и основы UI/UX": {
+            "Макетирование": {
+                korpus: [
+                    { name: "Супер Figma от VideoSmile", url: "https://edu.korusconsulting.ru/course/view.php?id=581", desc: "Figma", grade: "Junior,Middle" },
+                    { name: "Работа в Axure 7 для начинающих", url: "https://edu.korusconsulting.ru/course/view.php?id=20", desc: "Axure", grade: "Junior" },
+                    { name: "Основы проектирования интерфейсов в Axure", url: "https://edu.korusconsulting.ru/course/view.php?id=111", desc: "Прототипы", grade: "Junior,Middle" },
+                    { name: "Задание \"Прототипирование витрин\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1412", desc: "Прототипы", grade: "Middle" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы макетирования", grade: "Junior" }
+                ],
+                external: [
+                    { name: "Figma для начинающих (официальный)", url: "https://www.figma.com/learn", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
+            },
+            "Подбор типа графика / визуализация": {
+                korpus: [
+                    { name: "Тренинг по дашбордам от DataYoga", url: "https://edu.korusconsulting.ru/course/view.php?id=106", desc: "Дашборды", grade: "Junior,Middle" },
+                    { name: "Визуализация данных (ДАР)", url: "https://edu.korusconsulting.ru/course/view.php?id=1242", desc: "Визуализация", grade: "Junior,Middle" },
+                    { name: "Книга. Ольга Базалева - Мастерство визуализации данных", url: "https://edu.korusconsulting.ru/course/view.php?id=593", desc: "Визуализация", grade: "Junior,Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Визуализация данных (ДАР)", url: "https://edu.korusconsulting.ru/course/view.php?id=1242", desc: "Визуализация", grade: "Junior,Middle" },
+                    { name: "LuxmsBI, первые шаги", url: "https://edu.korusconsulting.ru/course/view.php?id=1177", desc: "BI-инструмент", grade: "Middle,Senior" },
+                    { name: "AI-ассистент для визуализации данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1406", desc: "ИИ-визуализация", grade: "Middle,Senior" }
+                ],
+                external: [
+                    { name: "Визуализация данных (Skillbox)", url: "https://skillbox.ru/course/data-visualization/", desc: "Платный, диплом", grade: "Middle,Senior" }
+                ]
+            },
+            "UX-паттерны": {
+                korpus: [
+                    { name: "Вебинар «UX/UI дизайн»", url: "https://edu.korusconsulting.ru/course/view.php?id=334", desc: "UX/UI", grade: "Junior,Middle" },
+                    { name: "Макетирование для не-дизайнеров", url: "https://edu.korusconsulting.ru/course/view.php?id=1174", desc: "Макетирование", grade: "Junior,Middle" }
+                ],
+                dar: [],
+                external: [
+                    { name: "Основы UX-дизайна (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/UX/", desc: "Бесплатно, сертификат платный", grade: "Junior,Middle" }
+                ]
+            }
+        },
+        "Участие в Presale": {
+            "Прескейл-компетенции": {
+                korpus: [
+                    { name: "Пресейлы: Искусство оценки, когда мало данных, но много ответственности", url: "https://edu.korusconsulting.ru/course/view.php?id=1458", desc: "Оценка в пресейле", grade: "Senior,Lead" },
+                    { name: "Вебинар \"Чек-лист как провести демонстрацию программного продукта клиенту\"", url: "https://edu.korusconsulting.ru/course/view.php?id=740", desc: "Проведение демо", grade: "Middle,Senior" },
+                    { name: "Проведение ПСИ/демонстраций (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=630", desc: "ПСИ", grade: "Middle,Senior" },
+                    { name: "Обучение пресейлов", url: "https://edu.korusconsulting.ru/course/view.php?id=177", desc: "Пресейл-подготовка", grade: "Middle,Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52", desc: "Экономика", grade: "Junior,Middle" },
+                    { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", grade: "Middle,Senior" }
+                ],
+                external: [
+                    { name: "Продажи и пресейл в IT (Skillbox)", url: "https://skillbox.ru/course/it-sales/", desc: "Платный, диплом", grade: "Middle,Senior,Lead" }
+                ]
+            }
+        },
+        "Управление ожиданиями и изменениями": {
+            "Управление ожиданиями": {
+                korpus: [
+                    { name: "Семинар по управлению ожиданиями заказчика", url: "https://edu.korusconsulting.ru/course/view.php?id=557", desc: "Управление ожиданиями", grade: "Senior,Lead" },
+                    { name: "Вебинар \"Как компании внедряют ИИ\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1060", desc: "ИИ-внедрение", grade: "Senior,Lead" },
+                    { name: "Как давать обратную связь", url: "https://edu.korusconsulting.ru/course/view.php?id=64", desc: "Обратная связь", grade: "Junior,Middle,Senior" },
+                    { name: "Переговоры", url: "https://edu.korusconsulting.ru/course/view.php?id=217", desc: "Переговоры", grade: "Middle,Senior" },
+                    { name: "Конструктивная конфронтация", url: "https://edu.korusconsulting.ru/course/view.php?id=229", desc: "Конфликты", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161", desc: "Софт-скиллы", grade: "Junior" }
+                ],
+                external: [
+                    { name: "Эффективные коммуникации (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/COMM/", desc: "Бесплатно", grade: "Junior,Middle,Senior" }
+                ]
+            },
+            "Управление изменениями": {
+                korpus: [
+                    { name: "Вебинар \"Внедрение непопулярных изменений\"", url: "https://edu.korusconsulting.ru/course/view.php?id=260", desc: "Управление изменениями", grade: "Senior,Lead" },
+                    { name: "Управление договором, требованиями и изменениями", url: "https://edu.korusconsulting.ru/course/view.php?id=747", desc: "Управление изменениями", grade: "Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Ступень 2. Я развиваю свой ДАР Наставничества", url: "https://edu.korusconsulting.ru/course/view.php?id=1165", desc: "Наставничество", grade: "Senior,Lead" }
+                ],
+                external: [
+                    { name: "Управление изменениями (Skillbox)", url: "https://skillbox.ru/course/change-management/", desc: "Платный, диплом", grade: "Senior,Lead" }
+                ]
+            }
+        },
         "Управление проектом": {
             "Проектные методологии": {
                 korpus: [
@@ -391,22 +635,187 @@
                 external: [
                     { name: "Agile и Scrum (Stepik)", url: "https://stepik.org/course/107", desc: "Бесплатный курс", grade: "Junior,Middle" }
                 ]
+            },
+            "Анализ рисков": {
+                korpus: [
+                    { name: "Риски на проектах (Power.UP XII)", url: "https://edu.korusconsulting.ru/course/view.php?id=750", desc: "Управление рисками", grade: "Senior,Lead" },
+                    { name: "Вебинар Алексея Сидоренко_Управление рисками", url: "https://edu.korusconsulting.ru/course/view.php?id=114", desc: "Риски", grade: "Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Apache Airflow", url: "https://edu.korusconsulting.ru/enrol/index.php?id=1022", desc: "Оркестрация", grade: "Middle,Senior" }
+                ],
+                external: [
+                    { name: "Управление рисками проекта (Skillbox)", url: "https://skillbox.ru/course/risk-management/", desc: "Платный, диплом", grade: "Senior,Lead" }
+                ]
+            },
+            "Управление проектом (общее)": {
+                korpus: [
+                    { name: "Книга \"Введение в управление проектами внедрения ERP-систем\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1226", desc: "Управление проектами", grade: "Senior,Lead" },
+                    { name: "Курс \"Основы проектного управления\"", url: "https://edu.korusconsulting.ru/course/view.php?id=741", desc: "Основы PM", grade: "Junior,Middle" },
+                    { name: "Интенсив для РП по управлению командой", url: "https://edu.korusconsulting.ru/course/view.php?id=968", desc: "Управление командой", grade: "Senior,Lead" },
+                    { name: "Когнитивные искажения в управлении проектами", url: "https://edu.korusconsulting.ru/course/view.php?id=748", desc: "Психология PM", grade: "Senior,Lead" },
+                    { name: "Интенсив по управлению стейкхолдерами (ЗСП) на проектах", url: "https://edu.korusconsulting.ru/course/view.php?id=1204", desc: "Стейкхолдеры", grade: "Senior,Lead" },
+                    { name: "Проведение стратегических/проектных сессий", url: "https://edu.korusconsulting.ru/course/view.php?id=412", desc: "Стратегические сессии", grade: "Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы PM", grade: "Junior" }
+                ],
+                external: [
+                    { name: "Project Manager (Skillbox)", url: "https://skillbox.ru/course/project-manager/", desc: "Платный, диплом", grade: "Junior,Middle,Senior" }
+                ]
+            },
+            "Оценка трудозатрат": {
+                korpus: [
+                    { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52", desc: "Экономика проекта", grade: "Junior,Middle" },
+                    { name: "Основы экономики проектов (Power.UP XII)", url: "https://edu.korusconsulting.ru/course/view.php?id=745", desc: "Экономика", grade: "Junior,Middle" },
+                    { name: "Вебинар. Финансовая модель", url: "https://edu.korusconsulting.ru/course/view.php?id=458", desc: "Финансовая модель", grade: "Middle,Senior" },
+                    { name: "Финансовая отчетность. Базовые понятия", url: "https://edu.korusconsulting.ru/course/view.php?id=1284", desc: "Финансовая отчетность", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52", desc: "Экономика", grade: "Junior,Middle" },
+                    { name: "Проектный бонус", url: "https://edu.korusconsulting.ru/course/view.php?id=729", desc: "Мотивация", grade: "Junior,Middle" }
+                ],
+                external: []
+            },
+            "Опыт реализации проектов": {
+                korpus: [
+                    { name: "Программа обучения стажеров 1С", url: "https://edu.korusconsulting.ru/course/view.php?id=378", desc: "Стажировка", grade: "Junior" },
+                    { name: "Курс молодого бойца", url: "https://edu.korusconsulting.ru/course/view.php?id=232", desc: "Адаптация", grade: "Junior" },
+                    { name: "Менторинг", url: "https://edu.korusconsulting.ru/course/view.php?id=449", desc: "Наставничество", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Практика", grade: "Junior" },
+                    { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "Практика", grade: "Junior" }
+                ],
+                external: []
+            },
+            "Работа в режиме многозадачности": {
+                korpus: [
+                    { name: "Тренинг \"Тайм-менеджмент без стресса\"", url: "https://edu.korusconsulting.ru/course/view.php?id=840", desc: "Тайм-менеджмент", grade: "Junior,Middle" },
+                    { name: "Управление рабочим временем", url: "https://edu.korusconsulting.ru/course/view.php?id=722", desc: "Тайм-менеджмент", grade: "Junior,Middle" },
+                    { name: "Тайм-менеджмент (общий курс)", url: "https://edu.korusconsulting.ru/course/view.php?id=12", desc: "Тайм-менеджмент", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Таймшиты. Учёт рабочего времени", url: "https://edu.korusconsulting.ru/course/view.php?id=569", desc: "Учёт времени", grade: "Junior,Middle" }
+                ],
+                external: [
+                    { name: "Тайм-менеджмент (Stepik)", url: "https://stepik.org/course/135", desc: "Бесплатный курс", grade: "Junior,Middle" }
+                ]
             }
         },
-        // Пример ИИ-компетенции
+        "HR и развитие сотрудников": {
+            "Развитие сотрудников": {
+                korpus: [
+                    { name: "Как составить ИПР на примере 1С", url: "https://edu.korusconsulting.ru/course/view.php?id=503", desc: "ИПР", grade: "Senior,Lead" },
+                    { name: "Менторинг 2.0", url: "https://edu.korusconsulting.ru/course/view.php?id=449", desc: "Наставничество", grade: "Senior,Lead" },
+                    { name: "Курс для руководителей Лига Лидеров КОРУС", url: "https://edu.korusconsulting.ru/course/view.php?id=1385", desc: "Лидерство", grade: "Lead" },
+                    { name: "Курс ДМХ (Должен-Может-Хочет)", url: "https://edu.korusconsulting.ru/course/view.php?id=131", desc: "ДМХ", grade: "Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Обучение руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820", desc: "HR-инструменты", grade: "Senior,Lead" },
+                    { name: "Ступень 1. Бизнес-игра по Наставничеству", url: "https://edu.korusconsulting.ru/course/view.php?id=1164", desc: "Наставничество", grade: "Senior,Lead" },
+                    { name: "Ступень 2. Я развиваю свой ДАР Наставничества", url: "https://edu.korusconsulting.ru/course/view.php?id=1165", desc: "Наставничество", grade: "Senior,Lead" }
+                ],
+                external: [
+                    { name: "Развитие сотрудников и наставничество (Skillbox)", url: "https://skillbox.ru/course/mentoring/", desc: "Платный, диплом", grade: "Senior,Lead" }
+                ]
+            },
+            "Найм и оценка": {
+                korpus: [
+                    { name: "Школа Руководителя MONS", url: "https://edu.korusconsulting.ru/course/view.php?id=500", desc: "Руководитель", grade: "Senior,Lead" },
+                    { name: "ДАР: Обучение Руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820", desc: "HR-процессы", grade: "Senior,Lead" }
+                ],
+                dar: [
+                    { name: "Обучение руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820", desc: "HR-процессы", grade: "Senior,Lead" }
+                ],
+                external: [
+                    { name: "HR-менеджмент (Skillbox)", url: "https://skillbox.ru/course/hr-manager/", desc: "Платный, диплом", grade: "Senior,Lead" }
+                ]
+            }
+        },
+        "Презентации и обучение": {
+            "Презентация результатов": {
+                korpus: [
+                    { name: "Тренинг «Мастерство презентаций»", url: "https://edu.korusconsulting.ru/course/view.php?id=990", desc: "Презентации", grade: "Junior,Middle,Senior" },
+                    { name: "KORUS Челлендж \"Делаем крутые слайды\"", url: "https://edu.korusconsulting.ru/course/view.php?id=100", desc: "Слайды", grade: "Junior,Middle" },
+                    { name: "Подготовка презентаций и выступлений", url: "https://edu.korusconsulting.ru/course/view.php?id=1182", desc: "Презентации", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", grade: "Junior,Middle,Senior" },
+                    { name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161", desc: "Софт-скиллы", grade: "Junior" }
+                ],
+                external: [
+                    { name: "Ораторское мастерство (Skillbox)", url: "https://skillbox.ru/course/oratory/", desc: "Платный, диплом", grade: "Junior,Middle,Senior" }
+                ]
+            },
+            "Обучение пользователей": {
+                korpus: [
+                    { name: "Обучение сотрудников заказчика, проведение ОПЭ", url: "https://edu.korusconsulting.ru/course/view.php?id=705", desc: "Обучение пользователей", grade: "Middle,Senior" },
+                    { name: "Обучение типовому функционалу Битрикс24", url: "https://edu.korusconsulting.ru/course/view.php?id=176", desc: "Обучение Битрикс", grade: "Junior,Middle" }
+                ],
+                dar: [
+                    { name: "Ступень 1. Бизнес-игра по Наставничеству", url: "https://edu.korusconsulting.ru/course/view.php?id=1164", desc: "Наставничество", grade: "Middle,Senior" }
+                ],
+                external: []
+            },
+            "Демо заказчику": {
+                korpus: [
+                    { name: "Чек-лист как провести демонстрацию программного продукта клиенту", url: "https://edu.korusconsulting.ru/course/view.php?id=740", desc: "Демо-презентация", grade: "Middle,Senior" },
+                    { name: "Проведение ПСИ/демонстраций (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=630", desc: "Демо", grade: "Middle,Senior" }
+                ],
+                dar: [
+                    { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", grade: "Middle,Senior" }
+                ],
+                external: []
+            }
+        },
+        // Добавляем ИИ-компетенции отдельной группой
         "ИИ-компетенции": {
+            "Управление ИИ-проектами": {
+                korpus: [],
+                dar: [],
+                external: [
+                    { name: "Искусственный интеллект и машинное обучение в проектах (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/AI/", desc: "Бесплатно, сертификат ~1000₽", grade: "Senior,Lead" },
+                    { name: "AI для менеджеров (Stepik)", url: "https://stepik.org/course/169571", desc: "Бесплатно, сертификат ~500₽", grade: "Senior,Lead" },
+                    { name: "Управление проектами в сфере ИИ (Skillbox)", url: "https://skillbox.ru/course/ai-project-management/", desc: "≈50 000₽, диплом", grade: "Senior,Lead" },
+                    { name: "ML Project Management (Нетология)", url: "https://netology.ru/programs/ml-project", desc: "≈60 000₽, сертификат", grade: "Senior,Lead" }
+                ]
+            },
+            "Создание ИИ-агентов": {
+                korpus: [],
+                dar: [],
+                external: [
+                    { name: "Building AI Agents with LangChain (DeepLearning.AI)", url: "https://www.deeplearning.ai/short-courses/langchain/", desc: "Бесплатный", grade: "Middle,Senior" },
+                    { name: "Создание чат-ботов на Python (Stepik)", url: "https://stepik.org/course/153445", desc: "Бесплатный", grade: "Middle,Senior" },
+                    { name: "Разработка на Python и ИИ-агенты (Яндекс.Практикум)", url: "https://practicum.yandex.ru/python-ai/", desc: "≈80 000₽, диплом", grade: "Middle,Senior,Прочее" },
+                    { name: "ИИ-агенты и автономные системы (Skillbox)", url: "https://skillbox.ru/course/ai-agents/", desc: "≈70 000₽, сертификат", grade: "Middle,Senior,Прочее" }
+                ]
+            },
             "Написание промптов": {
                 korpus: [],
                 dar: [],
                 external: [
                     { name: "Промпт-инжиниринг: основы (Stepik)", url: "https://stepik.org/course/126239", desc: "Бесплатно, сертификат ≈500₽", grade: "Junior,Middle,Senior" },
-                    { name: "Промпты для ChatGPT: практика (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/PROMPT/", desc: "Бесплатно, сертификат ≈1000₽", grade: "Junior,Middle,Senior" }
+                    { name: "Промпты для ChatGPT: практика (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/PROMPT/", desc: "Бесплатно, сертификат ≈1000₽", grade: "Junior,Middle,Senior" },
+                    { name: "Промпт-инжиниринг (Skillbox)", url: "https://skillbox.ru/course/prompt-engineering/", desc: "≈40 000₽, диплом", grade: "Middle,Senior" },
+                    { name: "Нейросети и промпты (Нетология)", url: "https://netology.ru/programs/ai-prompt", desc: "≈35 000₽, сертификат", grade: "Middle,Senior" },
+                    { name: "Промпт-инжиниринг от новичка до архитектора (Игорь Степанов)", url: "https://t.me/stepanov_ai", desc: "Авторский курс ≈30 000–60 000₽, сертификат", grade: "Middle,Senior,Lead" }
+                ]
+            },
+            "ИИ для аналитиков": {
+                korpus: [],
+                dar: [],
+                external: [
+                    { name: "Искусственный интеллект и машинное обучение (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/ML/", desc: "Бесплатно, сертификат ≈1000₽", grade: "Junior,Middle" },
+                    { name: "Машинное обучение для анализа данных (Stepik)", url: "https://stepik.org/course/245", desc: "Бесплатно, сертификат ≈500₽", grade: "Junior,Middle,Senior" },
+                    { name: "Машинное обучение в аналитике (Нетология)", url: "https://netology.ru/programs/ml-analytics", desc: "≈90 000₽, диплом", grade: "Middle,Senior,Lead" },
+                    { name: "Data Science и AI (Яндекс.Практикум)", url: "https://practicum.yandex.ru/data-science/", desc: "≈100 000₽, диплом", grade: "Middle,Senior,Lead" }
                 ]
             }
         }
     };
 
-    // ========== Инициализация ==========
+    // ========== Логика интерфейса ==========
     const categories = Object.keys(data);
     const categoryContainer = document.getElementById('categoryContainer');
     const gradeChips = document.querySelectorAll('.chip');
@@ -416,7 +825,6 @@
     let selectedCompetence = null;
     let selectedGrade = 'all';
 
-    // Рендеринг дерева категорий и компетенций
     function renderCategories() {
         categoryContainer.innerHTML = '';
         categories.forEach(category => {
@@ -443,14 +851,12 @@
             categoryContainer.appendChild(ul);
         });
 
-        // Если есть сохранённая компетенция, активируем её
         if (selectedCompetence) {
             const li = document.querySelector(`#categoryContainer li[data-competence="${selectedCompetence}"]`);
             if (li) {
                 li.classList.add('active');
             }
         } else {
-            // По умолчанию выбираем первую компетенцию
             const firstLi = document.querySelector('#categoryContainer li');
             if (firstLi) {
                 firstLi.classList.add('active');
@@ -460,7 +866,6 @@
         }
     }
 
-    // Фильтрация курсов по грейду и компетенции
     function getFilteredCourses(competence, grade) {
         const category = findCategoryForCompetence(competence);
         if (!category) return { korpus: [], dar: [], external: [] };
@@ -490,7 +895,6 @@
         return null;
     }
 
-    // Рендеринг курсов в правой части
     function renderCourses() {
         if (!selectedCompetence) {
             coursesContainer.innerHTML = '<div class="empty-state">Выберите компетенцию</div>';
@@ -511,7 +915,6 @@
 
         let html = `<div class="competence-group"><div class="competence-title">${selectedCompetence}</div>`;
 
-        // Блок КОРУС
         if (korpus.length > 0) {
             html += `
                 <div class="source-block">
@@ -527,7 +930,6 @@
             html += `</div></div>`;
         }
 
-        // Блок ДАР
         if (dar.length > 0) {
             html += `
                 <div class="source-block">
@@ -543,7 +945,6 @@
             html += `</div></div>`;
         }
 
-        // Блок Внешние
         if (external.length > 0) {
             html += `
                 <div class="source-block">
@@ -580,7 +981,6 @@
         `;
     }
 
-    // Обработка чипсов грейдов
     gradeChips.forEach(chip => {
         chip.addEventListener('click', function() {
             gradeChips.forEach(c => c.classList.remove('active'));
@@ -590,14 +990,11 @@
         });
     });
 
-    // Поиск
     searchInput.addEventListener('input', function() {
         renderCourses();
     });
 
-    // Инициализация
     renderCategories();
-    // Если есть сохранённая компетенция, она уже активирована при рендере дерева
 </script>
 </body>
 </html>
