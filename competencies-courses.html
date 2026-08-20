@@ -98,6 +98,11 @@
             color: #334155;
             margin-bottom: 10px;
         }
+        .source-header img {
+            height: 28px;
+            width: auto;
+            object-fit: contain;
+        }
         .course-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -397,7 +402,7 @@
 
     <script>
         // ====================================================================
-        // 1. ПОЛНЫЙ КАТАЛОГ КУРСОВ (все данные)
+        // 1. ПОЛНЫЙ КАТАЛОГ КУРСОВ (все данные – полная копия)
         // ====================================================================
         const data = {
             "Сбор и анализ требований": {
@@ -920,7 +925,6 @@
                 categoryContainer.appendChild(ul);
             });
 
-            // Автовыбор первой компетенции
             if (selectedCompetence) {
                 const li = document.querySelector(`#categoryContainer li[data-competence="${selectedCompetence}"]`);
                 if (li) li.classList.add('active');
@@ -980,17 +984,39 @@
             let html = `<div class="competence-group"><div class="competence-title">${selectedCompetence}</div>`;
 
             if (korpus.length > 0) {
-                html += `<div class="source-block"><div class="source-header"><span style="font-size:20px;">🏢</span> КОРУС</div><div class="course-grid">`;
+                html += `
+                    <div class="source-block">
+                        <div class="source-header">
+                            <img src="korus-logo.png" alt="КОРУС" onerror="this.style.display='none'">
+                            Курсы КОРУС
+                        </div>
+                        <div class="course-grid">
+                `;
                 korpus.forEach(c => { html += buildCourseCard(c, 'КОРУС'); });
                 html += `</div></div>`;
             }
+
             if (dar.length > 0) {
-                html += `<div class="source-block"><div class="source-header"><span style="font-size:20px;">🧠</span> ДАР</div><div class="course-grid">`;
+                html += `
+                    <div class="source-block">
+                        <div class="source-header">
+                            <img src="dar-logo.png" alt="ДАР" onerror="this.style.display='none'">
+                            Курсы ДАР
+                        </div>
+                        <div class="course-grid">
+                `;
                 dar.forEach(c => { html += buildCourseCard(c, 'ДАР'); });
                 html += `</div></div>`;
             }
+
             if (external.length > 0) {
-                html += `<div class="source-block"><div class="source-header"><span style="font-size:20px;">🌐</span> Внешние</div><div class="course-grid">`;
+                html += `
+                    <div class="source-block">
+                        <div class="source-header">
+                            <span style="font-size:20px;">🌐</span> Внешние курсы
+                        </div>
+                        <div class="course-grid">
+                `;
                 external.forEach(c => { html += buildCourseCard(c, 'Внешний'); });
                 html += `</div></div>`;
             }
