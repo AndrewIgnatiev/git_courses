@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // отключаем проверку сертификатов
+
 // server.js
 require('dotenv').config();
 const express = require('express');
