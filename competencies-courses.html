@@ -365,7 +365,7 @@
 
     <script>
         // ====================================================================
-        // 1. ПОЛНЫЙ КАТАЛОГ КУРСОВ (оригинал из вашего первого файла)
+        // 1. ПОЛНЫЙ КАТАЛОГ КУРСОВ (все данные – полная копия)
         // ====================================================================
         const data = {
             "Сбор и анализ требований": {
@@ -1005,6 +1005,7 @@
             `;
         }
 
+        // Обработчики чипов и поиска
         gradeChips.forEach(chip => {
             chip.addEventListener('click', function() {
                 gradeChips.forEach(c => c.classList.remove('active'));
@@ -1015,10 +1016,12 @@
         });
 
         searchInput.addEventListener('input', renderCourses);
+
+        // Первоначальный рендеринг
         renderCategories();
 
         // ====================================================================
-        // 3. ЧАТ-ВИДЖЕТ С ПОДКЛЮЧЕНИЕМ К ПРОКСИ (GigaChat)
+        // 3. ЧАТ-ВИДЖЕТ (работает через локальный прокси)
         // ====================================================================
         const chatBubble = document.getElementById('chatBubble');
         const chatModal = document.getElementById('chatModal');
@@ -1043,6 +1046,7 @@
             return div;
         }
 
+        // Функция получения всех курсов в плоском виде
         function getAllCourses() {
             let all = [];
             for (const category of Object.keys(data)) {
@@ -1066,7 +1070,7 @@
             return all;
         }
 
-        // Функция запроса к прокси
+        // ОСНОВНАЯ ФУНКЦИЯ ЗАПРОСА К ПРОКСИ (localhost:3000)
         async function askGigaChat(question) {
             const allCoursesFlat = getAllCourses();
             const coursesSummary = allCoursesFlat.map(c =>
@@ -1087,9 +1091,12 @@ ${coursesSummary}
                 ...chatHistory.slice(-6)
             ];
 
+            // Отправляем запрос к нашему прокси-серверу
             const response = await fetch('http://localhost:3000/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({ messages })
             });
 
@@ -1122,6 +1129,7 @@ ${coursesSummary}
             }
         }
 
+        // Открытие/закрытие чата
         chatBubble.addEventListener('click', () => {
             chatModal.classList.toggle('open');
             if (chatModal.classList.contains('open')) {
@@ -1147,7 +1155,7 @@ ${coursesSummary}
             }
         });
 
-        console.log('✅ Чат-помощник работает через прокси на порту 3000');
+        console.log('✅ Чат готов. Прокси должен быть запущен на порту 3000');
     </script>
 </body>
 </html>
