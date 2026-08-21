@@ -1,5 +1,5 @@
-// server.js – используем готовый Bearer-токен
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // отключаем проверку сертификата (для локальной разработки)
+// server.js – упрощённая версия с готовым Bearer-токеном
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // отключаем проверку сертификатов (для локальной разработки)
 
 require('dotenv').config();
 const express = require('express');
