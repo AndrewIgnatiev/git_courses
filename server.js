@@ -1,4 +1,4 @@
-// server.js – упрощённая версия
+// server.js – финальная версия с правильной моделью
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 require('dotenv').config();
@@ -24,12 +24,16 @@ app.post('/chat', async (req, res) => {
             return res.status(500).json({ error: 'API key not configured in .env' });
         }
 
+        // Используем существующую модель из списка
         const payload = {
-            model: 'GigaChat',
+            model: 'GigaChat-2',   // <-- исправлено!
             messages: messages,
             temperature: 0.7,
             max_tokens: 800
         };
+
+        // Логируем, что отправляем (для отладки)
+        console.log('Отправка запроса к GigaChat с моделью:', payload.model);
 
         const response = await fetch('https://api.giga.chat/v1/chat/completions', {
             method: 'POST',
@@ -42,6 +46,7 @@ app.post('/chat', async (req, res) => {
 
         if (!response.ok) {
             const errorText = await response.text();
+            console.error('Ошибка от GigaChat:', response.status, errorText);
             return res.status(response.status).json({ error: errorText });
         }
 
