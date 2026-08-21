@@ -310,43 +310,6 @@
         .chat-input button:hover { background: #1d4ed8; }
         .chat-input button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-        /* Стиль для ввода ключа внутри чата */
-        .key-input-area {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: #fff;
-            padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            margin-top: 8px;
-        }
-        .key-input-area label {
-            font-weight: 600;
-            font-size: 14px;
-        }
-        .key-input-area input {
-            padding: 8px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: monospace;
-        }
-        .key-input-area button {
-            padding: 8px 12px;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .key-input-area button:hover { background: #1d4ed8; }
-        .key-input-area .hint {
-            font-size: 12px;
-            color: #64748b;
-        }
-
         @media (max-width: 640px) {
             .chat-modal {
                 width: calc(100vw - 20px);
@@ -888,7 +851,7 @@
         };
 
         // ====================================================================
-        // 2. ЛОГИКА РЕНДЕРИНГА КАТЕГОРИЙ И КУРСОВ (без изменений)
+        // 2. ЛОГИКА РЕНДЕРИНГА КАТЕГОРИЙ И КУРСОВ
         // ====================================================================
         const categories = Object.keys(data);
         const categoryContainer = document.getElementById('categoryContainer');
@@ -1042,7 +1005,6 @@
             `;
         }
 
-        // Обработчики чипов и поиска
         gradeChips.forEach(chip => {
             chip.addEventListener('click', function() {
                 gradeChips.forEach(c => c.classList.remove('active'));
@@ -1053,12 +1015,10 @@
         });
 
         searchInput.addEventListener('input', renderCourses);
-
-        // Первоначальный рендеринг
         renderCategories();
 
         // ====================================================================
-        // 3. ЧАТ-ВИДЖЕТ С ПОДКЛЮЧЕНИЕМ К GigaChat
+        // 3. ЧАТ-ВИДЖЕТ С ПОДКЛЮЧЕНИЕМ К ПРОКСИ (GigaChat)
         // ====================================================================
         const chatBubble = document.getElementById('chatBubble');
         const chatModal = document.getElementById('chatModal');
@@ -1068,49 +1028,6 @@
         const chatSendBtn = document.getElementById('chatSendBtn');
 
         let chatHistory = [];
-        let apiKey = localStorage.getItem('gigachat_api_key') || '';
-
-        // Функция запроса ключа, если его нет
-        function ensureKey() {
-            if (apiKey) return true;
-            const msg = document.createElement('div');
-            msg.className = 'chat-message bot';
-            msg.innerHTML = `
-                <div class="key-input-area">
-                    <label for="tempKeyInput">🔑 Введите ваш API-ключ GigaChat (получите на developers.sber.ru):</label>
-                    <input type="password" id="tempKeyInput" placeholder="t.gigachat_... или Bearer-токен">
-                    <button id="tempKeySaveBtn">Сохранить и продолжить</button>
-                    <span class="hint">Ключ сохранится в вашем браузере и никуда не отправится.</span>
-                </div>
-            `;
-            chatMessagesEl.appendChild(msg);
-            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-
-            const input = msg.querySelector('#tempKeyInput');
-            const btn = msg.querySelector('#tempKeySaveBtn');
-
-            btn.addEventListener('click', () => {
-                const key = input.value.trim();
-                if (key) {
-                    apiKey = key;
-                    localStorage.setItem('gigachat_api_key', key);
-                    msg.remove();
-                    const success = document.createElement('div');
-                    success.className = 'chat-message bot';
-                    success.textContent = '✅ Ключ сохранён! Теперь вы можете задавать вопросы.';
-                    chatMessagesEl.appendChild(success);
-                    chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-                } else {
-                    alert('Пожалуйста, введите корректный ключ.');
-                }
-            });
-
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') btn.click();
-            });
-
-            return false;
-        }
 
         function addMessage(role, text, isLoading = false) {
             const div = document.createElement('div');
@@ -1126,33 +1043,6 @@
             return div;
         }
 
-        async function handleChatQuery() {
-            const question = chatInput.value.trim();
-            if (!question) return;
-            chatInput.value = '';
-
-            if (!ensureKey()) {
-                chatInput.value = question;
-                return;
-            }
-
-            addMessage('user', question);
-            chatHistory.push({ role: 'user', content: question });
-
-            const loadingMsg = addMessage('bot', '⏳ Думаю...', true);
-
-            try {
-                const answer = await askGigaChat(question);
-                if (loadingMsg) loadingMsg.remove();
-                addMessage('bot', answer);
-                chatHistory.push({ role: 'assistant', content: answer });
-            } catch (err) {
-                if (loadingMsg) loadingMsg.remove();
-                addMessage('bot', '❌ Ошибка: ' + err.message);
-            }
-        }
-
-        // Функция получения всех курсов в плоском виде
         function getAllCourses() {
             let all = [];
             for (const category of Object.keys(data)) {
@@ -1176,9 +1066,8 @@
             return all;
         }
 
-        // ОСНОВНАЯ ФУНКЦИЯ ЗАПРОСА К GigaChat
+        // Функция запроса к прокси
         async function askGigaChat(question) {
-            const model = 'GigaChat'; // или 'GigaChat-Plus', 'GigaChat-Lite'
             const allCoursesFlat = getAllCourses();
             const coursesSummary = allCoursesFlat.map(c =>
                 `- ${c.name} (Грейд: ${c.grade}, Категория: ${c.category}, Компетенция: ${c.competence})`
@@ -1193,41 +1082,50 @@ ${coursesSummary}
 Если вопрос не о курсах, вежливо предложи вернуться к теме.
 `;
 
-            const payload = {
-                model: model,
-                messages: [
-                    { role: "system", content: systemMessage },
-                    ...chatHistory.slice(-6)
-                ],
-                temperature: 0.7,
-                max_tokens: 800
-            };
+            const messages = [
+                { role: "system", content: systemMessage },
+                ...chatHistory.slice(-6)
+            ];
 
-            const response = await fetch('https://api.giga.chat/v1/chat/completions', {
+            const response = await fetch('http://localhost:3000/chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify(payload)
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages })
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || `Ошибка HTTP ${response.status}`);
+                const error = await response.json();
+                throw new Error(error.error || `HTTP ${response.status}`);
             }
-
             const data = await response.json();
-            // GigaChat возвращает массив choices
             return data.choices[0].message.content;
         }
 
-        // Открытие/закрытие чата
+        async function handleChatQuery() {
+            const question = chatInput.value.trim();
+            if (!question) return;
+            chatInput.value = '';
+
+            addMessage('user', question);
+            chatHistory.push({ role: 'user', content: question });
+
+            const loadingMsg = addMessage('bot', '⏳ Думаю...', true);
+
+            try {
+                const answer = await askGigaChat(question);
+                if (loadingMsg) loadingMsg.remove();
+                addMessage('bot', answer);
+                chatHistory.push({ role: 'assistant', content: answer });
+            } catch (err) {
+                if (loadingMsg) loadingMsg.remove();
+                addMessage('bot', '❌ Ошибка: ' + err.message);
+            }
+        }
+
         chatBubble.addEventListener('click', () => {
             chatModal.classList.toggle('open');
             if (chatModal.classList.contains('open')) {
                 chatInput.focus();
-                if (!apiKey) ensureKey();
             }
         });
 
@@ -1249,8 +1147,7 @@ ${coursesSummary}
             }
         });
 
-        console.log('✅ Чат-помощник настроен на GigaChat. API-ключ ' + (apiKey ? 'установлен' : 'не установлен'));
-        console.log('✅ Всего категорий:', categories.length);
+        console.log('✅ Чат-помощник работает через прокси на порту 3000');
     </script>
 </body>
 </html>
