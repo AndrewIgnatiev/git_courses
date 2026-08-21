@@ -1,24 +1,31 @@
-require('dotenv').config();          // загружаем переменные из .env
+// server.js
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch'); // для HTTP-запросов из Node.js
+
+// Проверяем наличие встроенного fetch (Node.js 18+)
+let fetch;
+try {
+    fetch = global.fetch; // если есть, используем его
+} catch (e) {
+    fetch = require('node-fetch'); // иначе подключаем node-fetch
+}
+
 const app = express();
+app.use(cors());
+app.use(express.json());
 
-app.use(cors());                     // разрешаем кросс-доменные запросы
-app.use(express.json());             // парсим JSON-тело запроса
-
-// Эндпоинт, который будет принимать запросы от вашего HTML
 app.post('/chat', async (req, res) => {
     try {
-        const { messages } = req.body; // массив сообщений от клиента
-        const apiKey = process.env.GIGACHAT_API_KEY; // ключ из переменной окружения
+        const { messages } = req.body;
+        const apiKey = process.env.GIGACHAT_API_KEY;
 
         if (!apiKey) {
             return res.status(500).json({ error: 'API key not configured on server' });
         }
 
         const payload = {
-            model: 'GigaChat',        // или 'GigaChat-Plus', 'GigaChat-Lite'
+            model: 'GigaChat', // или 'GigaChat-Plus', 'GigaChat-Lite'
             messages: messages,
             temperature: 0.7,
             max_tokens: 800
@@ -39,7 +46,7 @@ app.post('/chat', async (req, res) => {
         }
 
         const data = await response.json();
-        res.json(data); // отправляем ответ обратно клиенту
+        res.json(data);
     } catch (error) {
         console.error('Ошибка прокси:', error);
         res.status(500).json({ error: error.message });
