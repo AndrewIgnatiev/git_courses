@@ -1,1155 +1,515 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конструктор ИПР + Локальный поиск</title>
-    <style>
-        /* ===== СТИЛИ (те же, что были) ===== */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f4f7fb;
-            color: #1e293b;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: #fff;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-        h1 { font-size: 28px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        h1 small { font-size: 16px; font-weight: 400; color: #64748b; }
-        .layout { display: flex; gap: 30px; flex-wrap: wrap; }
-        .sidebar {
-            flex: 0 0 280px;
-            background: #f8fafc;
-            border-radius: 16px;
-            padding: 20px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .sidebar h2 { font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 15px; }
-        .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-        .chip {
-            padding: 6px 14px;
-            border-radius: 20px;
-            background: #e2e8f0;
-            border: 1px solid transparent;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-            color: #334155;
-        }
-        .chip:hover { background: #cbd5e1; }
-        .chip.active { background: #2563eb; color: #fff; border-color: #2563eb; }
-        .category-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #334155;
-            margin-top: 16px;
-            margin-bottom: 6px;
-            padding-left: 8px;
-            border-left: 3px solid #2563eb;
-        }
-        .sidebar ul { list-style: none; margin-bottom: 8px; }
-        .sidebar li {
-            padding: 6px 12px 6px 20px;
-            margin-bottom: 2px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-        .sidebar li:hover { background: #e2e8f0; }
-        .sidebar li.active { background: #2563eb; color: #fff; font-weight: 500; }
-        .main { flex: 1; min-width: 0; }
-        .search-box {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            outline: none;
-            transition: border 0.2s;
-        }
-        .search-box:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .competence-group { margin-bottom: 30px; }
-        .competence-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #0f172a;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-        }
-        .source-block { margin-bottom: 20px; }
-        .source-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 10px;
-        }
-        .source-header img {
-            height: 28px;
-            width: auto;
-            object-fit: contain;
-        }
-        .course-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-        .course-card {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 16px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-            position: relative;
-            cursor: pointer;
-        }
-        .course-card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .course-card a { text-decoration: none; color: #1e293b; font-weight: 500; display: block; margin-bottom: 4px; }
-        .course-card a:hover { color: #2563eb; }
-        .course-card .meta {
-            font-size: 12px;
-            color: #64748b;
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-top: 8px;
-        }
-        .course-card .meta .grade {
-            background: #e2e8f0;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-        .course-card .meta .source {
-            background: #dbeafe;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-            color: #1d4ed8;
-        }
-        .course-card .popover-text {
-            position: absolute;
-            bottom: calc(100% + 12px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: #fff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.5;
-            width: max-content;
-            max-width: 320px;
-            white-space: normal;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-            pointer-events: none;
-            z-index: 10;
-            text-align: left;
-            word-wrap: break-word;
-        }
-        .course-card .popover-text::after {
-            content: '';
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 6px;
-            border-style: solid;
-            border-color: #1e293b transparent transparent transparent;
-        }
-        .course-card:hover .popover-text { opacity: 1; visibility: visible; }
-        .empty-state { color: #94a3b8; font-style: italic; padding: 20px 0; }
-
-        /* ===== ЧАТ-ВИДЖЕТ ===== */
-        .chat-bubble {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            background: #2563eb;
-            border-radius: 50%;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: none;
-            z-index: 999;
-            transition: transform 0.2s;
-            color: white;
-            font-size: 28px;
-        }
-        .chat-bubble:hover { transform: scale(1.05); }
-
-        .chat-modal {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 400px;
-            max-width: calc(100vw - 40px);
-            max-height: 500px;
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            display: none;
-            flex-direction: column;
-            z-index: 1000;
-            overflow: hidden;
-            font-size: 14px;
-            border: 1px solid #e2e8f0;
-        }
-        .chat-modal.open { display: flex; }
-
-        .chat-header {
-            background: #2563eb;
-            color: #fff;
-            padding: 16px 20px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-header button {
-            background: none;
-            border: none;
-            color: #fff;
-            font-size: 20px;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .chat-messages {
-            padding: 16px 20px;
-            flex: 1;
-            overflow-y: auto;
-            background: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-height: 300px;
-        }
-        .chat-message {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 18px;
-            line-height: 1.5;
-            word-wrap: break-word;
-            white-space: pre-wrap;
-        }
-        .chat-message.bot {
-            background: #e2e8f0;
-            color: #1e293b;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .chat-message.user {
-            background: #2563eb;
-            color: #fff;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .chat-message .course-link {
-            display: block;
-            color: #1d4ed8;
-            text-decoration: none;
-            font-weight: 500;
-            margin: 4px 0;
-        }
-        .chat-message .course-link:hover { text-decoration: underline; }
-        .course-list { margin-top: 8px; }
-        .course-list li { list-style: none; margin-bottom: 6px; }
-        .course-list a { color: #1d4ed8; text-decoration: none; font-weight: 500; }
-        .course-list a:hover { text-decoration: underline; }
-
-        .chat-input {
-            display: flex;
-            gap: 8px;
-            padding: 12px 16px;
-            border-top: 1px solid #e2e8f0;
-            background: #fff;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 8px 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-        }
-        .chat-input input:focus { border-color: #2563eb; }
-        .chat-input button {
-            padding: 8px 16px;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .chat-input button:hover { background: #1d4ed8; }
-        .chat-input button:disabled { opacity: 0.6; cursor: not-allowed; }
-
-        @media (max-width: 640px) {
-            .chat-modal {
-                width: calc(100vw - 20px);
-                right: 10px;
-                bottom: 90px;
-                max-height: 70vh;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Каталог развития | KORUS Education</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--brand:#6366f1;--brand-dark:#4f46e5;--brand-soft:#f4f0ff;--brand-line:#b9a8ff;--ink:#141414;--muted:#667085;--line:#d9dee8;--soft:#f6f7fb;--dark:#212f45;--green:#35b978;--yellow:#d8bf2a;--red:#ea6b72}
+html,body{font-family:'Inter','Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f4f7fb;color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--brand-dark);text-decoration:none}a:hover{text-decoration:underline}
+.k-header{background:var(--dark);color:#fff;padding:14px 0;box-shadow:0 2px 10px rgba(0,0,0,.08);position:sticky;top:0;z-index:100}
+.k-header-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:18px}
+.k-logo{display:flex;align-items:center;gap:10px;color:#fff;font-weight:800;font-size:18px}
+.k-logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#F9423A 0%,#c252f7 50%,#7949F4 100%);display:grid;place-items:center;font-weight:900;font-size:15px;color:#fff}
+.k-nav{margin-left:auto;display:flex;gap:22px;font-size:14px;font-weight:500;color:rgba(255,255,255,.78)}
+.k-nav a{color:inherit}.k-nav a:hover{color:#fff;text-decoration:none}
+.k-nav a.active{color:#fff}
+.k-container{max-width:1400px;margin:0 auto;padding:30px 24px 60px}
+.k-hero{background:linear-gradient(135deg,#5b35d5 0%,#17161c 70%);border-radius:16px;padding:30px 32px;color:#fff;margin-bottom:26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.k-hero h1{font-size:clamp(24px,3vw,36px);line-height:1.1;font-weight:800;margin-bottom:8px}
+.k-hero p{color:rgba(255,255,255,.8);max-width:720px;font-size:15px}
+.k-hero-badge{padding:10px 16px;border:1px solid rgba(255,255,255,.25);border-radius:10px;font-size:13px;color:rgba(255,255,255,.85)}
+.k-hero-cta{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;background:#fff;color:#5b35d5;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;transition:all .2s;box-shadow:0 6px 20px rgba(0,0,0,.18);margin-top:14px}
+.k-hero-cta:hover{background:#f4f0ff;transform:translateY(-1px);text-decoration:none;color:#4f46e5;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.k-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.k-chip{padding:7px 16px;border-radius:20px;background:#fff;border:1px solid var(--line);cursor:pointer;font-size:13px;font-weight:600;transition:all .2s;color:#334155}
+.k-chip:hover{border-color:var(--brand-line);color:var(--brand-dark)}
+.k-chip.active{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 4px 12px rgba(99,102,241,.3)}
+.k-layout{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start}
+.k-sidebar{flex:0 0 280px;background:#fff;border-radius:16px;padding:20px;box-shadow:0 4px 20px rgba(15,23,42,.04);position:sticky;top:90px;max-height:calc(100vh - 120px);overflow-y:auto}
+.k-sidebar h2{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:12px;font-weight:700}
+.k-category-title{font-size:13px;font-weight:700;color:var(--brand-dark);margin:16px 0 6px;padding-left:10px;border-left:3px solid var(--brand)}
+.k-sidebar ul{list-style:none}
+.k-sidebar li{padding:7px 12px 7px 18px;margin-bottom:2px;border-radius:8px;cursor:pointer;transition:all .2s;font-size:13.5px;color:#334155}
+.k-sidebar li:hover{background:var(--soft);color:var(--brand-dark)}
+.k-sidebar li.active{background:var(--brand-soft);color:var(--brand-dark);font-weight:600}
+.k-main{flex:1;min-width:0}
+.k-search-box{width:100%;padding:12px 18px;border:1px solid var(--line);border-radius:12px;font-size:15px;margin-bottom:20px;outline:none;transition:all .2s;background:#fff;font-family:inherit}
+.k-search-box:focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.k-competence-group{margin-bottom:32px}
+.k-competence-title{font-size:22px;font-weight:700;margin-bottom:16px;color:var(--ink);padding-bottom:10px;border-bottom:2px solid var(--line)}
+.k-source-block{margin-bottom:22px}
+.k-source-header{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#334155;margin-bottom:12px}
+.k-source-header .k-source-dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+.k-source-header .k-source-dot.dar{background:var(--green)}
+.k-source-header .k-source-dot.dpo{background:#8b5cf6}
+.k-source-header .k-source-dot.ext{background:var(--yellow)}
+.k-source-header .k-source-dot.book{background:#0ea5e9}
+.k-source-header .k-source-dot.trainer{background:#f59e0b}
+.k-source-header .k-source-dot.cert{background:#10b981}
+.k-course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.k-course-card{background:#fff;border-radius:14px;padding:18px;border:1px solid var(--line);transition:all .2s;position:relative;cursor:pointer;display:flex;flex-direction:column;min-height:110px}
+.k-course-card:hover{border-color:var(--brand-line);box-shadow:0 8px 24px rgba(99,102,241,.12);transform:translateY(-2px)}
+.k-course-card a{text-decoration:none;color:var(--ink);font-weight:600;display:block;margin-bottom:8px;font-size:14.5px;line-height:1.35}
+.k-course-card a:hover{color:var(--brand-dark)}
+.k-course-card .k-meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.k-course-card .k-meta span{padding:3px 9px;border-radius:12px;font-weight:600}
+.k-course-card .k-grade{background:var(--brand-soft);color:var(--brand-dark)}
+.k-course-card .k-source-tag{background:#eef2f6;color:#475569}
+.k-course-card .k-provider{background:#e0e7ff;color:#3730a3}
+.k-course-card .k-duration{background:#f1f5f9;color:#475569}
+.k-course-card .k-price{background:#ecfdf3;color:#166534}
+.k-course-card .k-author{background:#e0f2fe;color:#075985}
+.k-course-card .k-note{display:block;font-size:11.5px;color:var(--muted);margin-top:4px;font-weight:400}
+.k-popover{position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 16px;border-radius:10px;font-size:13px;line-height:1.5;width:max-content;max-width:320px;white-space:normal;box-shadow:0 12px 30px rgba(0,0,0,.25);opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s;pointer-events:none;z-index:10;text-align:left;font-weight:400}
+.k-popover::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:6px;border-style:solid;border-color:var(--dark) transparent transparent transparent}
+.k-course-card:hover .k-popover{opacity:1;visibility:visible}
+.k-empty{color:#94a3b8;font-style:italic;padding:20px 0}
+.chat-bubble{position:fixed;bottom:30px;right:30px;width:60px;height:60px;background:var(--brand);border-radius:50%;box-shadow:0 6px 20px rgba(99,102,241,.4);display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;z-index:999;transition:transform .2s;color:#fff;font-size:26px}
+.chat-bubble:hover{transform:scale(1.05);background:var(--brand-dark)}
+.chat-modal{position:fixed;bottom:100px;right:30px;width:400px;max-width:calc(100vw - 40px);max-height:500px;background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.2);display:none;flex-direction:column;z-index:1000;overflow:hidden;font-size:14px;border:1px solid var(--line)}
+.chat-modal.open{display:flex}
+.chat-header{background:linear-gradient(135deg,#5b35d5,#17161c);color:#fff;padding:16px 20px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.chat-header button{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;line-height:1}
+.chat-messages{padding:16px 20px;flex:1;overflow-y:auto;background:var(--soft);display:flex;flex-direction:column;gap:10px;max-height:300px}
+.chat-message{max-width:85%;padding:10px 14px;border-radius:18px;line-height:1.5;word-wrap:break-word;white-space:pre-wrap;font-size:13.5px}
+.chat-message.bot{background:#e2e8f0;color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-message.user{background:var(--brand);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chat-message .course-link{display:block;color:var(--brand-dark);text-decoration:none;font-weight:500;margin:4px 0}
+.chat-message .course-link:hover{text-decoration:underline}
+.course-list{margin-top:8px}.course-list li{list-style:none;margin-bottom:6px}
+.course-list a{color:var(--brand-dark);text-decoration:none;font-weight:500}.course-list a:hover{text-decoration:underline}
+.chat-input{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line);background:#fff}
+.chat-input input{flex:1;padding:8px 12px;border:1px solid var(--line);border-radius:20px;font-size:14px;outline:none;font-family:inherit}
+.chat-input input:focus{border-color:var(--brand)}
+.chat-input button{padding:8px 16px;background:var(--brand);color:#fff;border:none;border-radius:20px;font-weight:600;cursor:pointer;transition:background .2s}
+.chat-input button:hover{background:var(--brand-dark)}
+.k-footer{background:var(--dark);color:rgba(255,255,255,.7);padding:26px 0;margin-top:40px}
+.k-footer-inner{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;font-size:13px}
+.k-footer a{color:rgba(255,255,255,.85)}.k-footer a:hover{color:#fff}
+@media (max-width:900px){.k-sidebar{position:static;flex:1 1 100%;max-height:none}.k-hero{padding:22px}.k-nav{display:none}}
+@media (max-width:640px){.chat-modal{width:calc(100vw - 20px);right:10px;bottom:90px;max-height:70vh}.k-container{padding:20px 14px 40px}}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>📚 Конструктор ИПР <small>выберите грейд и компетенцию</small></h1>
 
-        <div class="layout">
-            <div class="sidebar">
-                <h2>Фильтры</h2>
-                <div class="chips" id="gradeChips">
-                    <div class="chip" data-grade="all">Все</div>
-                    <div class="chip" data-grade="Junior">Junior</div>
-                    <div class="chip" data-grade="Middle">Middle</div>
-                    <div class="chip" data-grade="Senior">Senior</div>
-                    <div class="chip active" data-grade="Lead">Lead</div>
-                    <div class="chip" data-grade="Прочее">Прочее</div>
-                </div>
-                <div id="categoryContainer"></div>
-            </div>
+<header class="k-header">
+<div class="k-header-inner">
+<a href="competencies-courses.html" class="k-logo"><span class="k-logo-mark">КУ</span><span>КОРУС Education</span></a>
+<nav class="k-nav">
+<a href="competencies-courses.html" class="active">Курсы</a>
+<a href="#">Power.UP</a>
+<a href="#">О нас</a>
+<a href="ipr-builder.html">Конструктор ИПР</a>
+</nav>
+</div>
+</header>
 
-            <div class="main">
-                <input type="text" class="search-box" id="searchInput" placeholder="Поиск по названию курса...">
-                <div id="coursesContainer"></div>
-            </div>
-        </div>
-    </div>
+<div class="k-container">
+<section class="k-hero">
+<div>
+<h1>Каталог развития</h1>
+<p>Выберите грейд и компетенцию — соберём подборку курсов КОРУС, ДАР, внешних платформ ДПО, книг, тренажёров и сертификаций.</p>
+<a href="ipr-builder.html" class="k-hero-cta">Собрать ИПР →</a>
+</div>
+<div class="k-hero-badge">Обновляется по вторникам и пятницам</div>
+</section>
 
-    <!-- ПЛАВАЮЩАЯ КНОПКА -->
-    <button class="chat-bubble" id="chatBubble" aria-label="Открыть чат-помощник">💬</button>
+<div class="k-chips" id="gradeChips">
+<div class="k-chip" data-grade="all">Все</div>
+<div class="k-chip" data-grade="Junior">Junior</div>
+<div class="k-chip" data-grade="Middle">Middle</div>
+<div class="k-chip" data-grade="Senior">Senior</div>
+<div class="k-chip active" data-grade="Lead">Lead</div>
+<div class="k-chip" data-grade="Прочее">Прочее</div>
+</div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ЧАТА -->
-    <div class="chat-modal" id="chatModal">
-        <div class="chat-header">
-            <span>🤖 Помощник по курсам (локальный)</span>
-            <button id="closeChatBtn">✕</button>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="chat-message bot">👋 Я могу помочь подобрать курсы под ваш запрос! Напишите, что вы ищете (например, «SQL для мидла»).</div>
-        </div>
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Ваш вопрос..." autofocus>
-            <button id="chatSendBtn">Отправить</button>
-        </div>
-    </div>
+<div class="k-layout">
+<aside class="k-sidebar">
+<h2>Компетенции</h2>
+<div id="categoryContainer"></div>
+</aside>
+<main class="k-main">
+<input type="text" class="k-search-box" id="searchInput" placeholder="Поиск по названию курса, книги, тренажёра...">
+<div id="coursesContainer"></div>
+</main>
+</div>
+</div>
 
-    <script>
-        // ====================================================================
-        // 1. ПОЛНЫЙ КАТАЛОГ КУРСОВ (взят из вашего исходного файла)
-        // ====================================================================
-        const data = {
-            "Сбор и анализ требований": {
-                "Выявление и сбор требований": {
-                    korpus: [
-                        { name: "Проведение CustDev-ов", url: "https://edu.korusconsulting.ru/course/view.php?id=102", desc: "Практический курс по CustDev", grade: "Junior,Middle" },
-                        { name: "Воркшоп \"Выбор лучших: Как проводить успешные интервью\"", url: "https://edu.korusconsulting.ru/course/view.php?id=568", desc: "Интервью-воркшоп", grade: "Junior,Middle,Senior" },
-                        { name: "Вебинар \"Пресейлы: как проводить успешные встречи с клиентами\"", url: "https://edu.korusconsulting.ru/course/view.php?id=687", desc: "Пресейл-вебинар", grade: "Middle,Senior,Lead" },
-                        { name: "Интервью с заказчиком: как произвести профессиональное впечатление", url: "https://edu.korusconsulting.ru/course/view.php?id=1330", desc: "Навыки интервьюирования", grade: "Middle,Senior" },
-                        { name: "Книга. BABOK Guide v3", url: "https://edu.korusconsulting.ru/course/view.php?id=632", desc: "База знаний BABOK", grade: "Junior,Middle,Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Базовый курс для Junior", grade: "Junior" },
-                        { name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2", desc: "Роли в проекте", grade: "Junior,Middle" }
-                    ],
-                    external: [
-                        { name: "CustDev: как проводить интервью (Stepik)", url: "https://stepik.org/course/110921", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                },
-                "Анализ и формулирование ФТ": {
-                    korpus: [
-                        { name: "Как написать ТЗ, чтобы не было мучительно больно", url: "https://edu.korusconsulting.ru/course/view.php?id=392", desc: "Практика написания ТЗ", grade: "Middle,Senior" },
-                        { name: "Постановка задач в разработку (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=628", desc: "Задачи разработчикам", grade: "Junior,Middle,Senior" },
-                        { name: "OpenSpec: как найти блокеры и противоречия в ТЗ", url: "https://edu.korusconsulting.ru/course/view.php?id=1462", desc: "Поиск слабых мест в ТЗ", grade: "Senior,Lead" },
-                        { name: "Ключевые инструменты аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=827", desc: "Набор инструментов BA", grade: "Junior,Middle" },
-                        { name: "Управление требованиями", url: "https://edu.korusconsulting.ru/course/view.php?id=1166", desc: "Управление требованиями", grade: "Middle,Senior" },
-                        { name: "Запросы бизнеса на автоматизацию", url: "https://edu.korusconsulting.ru/course/view.php?id=1168", desc: "Анализ запросов", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Базовый курс по ФТ", grade: "Junior" }
-                    ],
-                    external: []
-                },
-                "Анализ и формулирование НФТ": {
-                    korpus: [
-                        { name: "Тестирование. Зачем аналитику тестировать разработку?", url: "https://edu.korusconsulting.ru/course/view.php?id=703", desc: "Роль тестирования", grade: "Middle,Senior" },
-                        { name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768", desc: "Тест-дизайн", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Основы информационной безопасности", url: "https://edu.korusconsulting.ru/course/view.php?id=978", desc: "Безопасность как НФТ", grade: "Junior,Middle" },
-                        { name: "Обработка персональных данных", url: "https://edu.korusconsulting.ru/course/view.php?id=985", desc: "ПДн", grade: "Junior,Middle" }
-                    ],
-                    external: []
-                },
-                "Моделирование процессов": {
-                    korpus: [
-                        { name: "Анна Вичугова - BPMN для людей", url: "https://edu.korusconsulting.ru/course/view.php?id=577", desc: "BPMN-нотация", grade: "Junior,Middle" },
-                        { name: "Моделирование и автоматизация бизнес-процессов", url: "https://edu.korusconsulting.ru/course/view.php?id=219", desc: "Автоматизация БП", grade: "Middle,Senior" },
-                        { name: "UML в Архитектуре, Аналитике и Разработке", url: "https://edu.korusconsulting.ru/course/view.php?id=760", desc: "UML", grade: "Middle,Senior" },
-                        { name: "BPMN", url: "https://edu.korusconsulting.ru/course/view.php?id=1344", desc: "Спецкурс по BPMN", grade: "Junior,Middle" },
-                        { name: "Бизнес-процессы: от хаоса к порядку", url: "https://edu.korusconsulting.ru/course/view.php?id=1247", desc: "Оптимизация процессов", grade: "Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Моделирование", grade: "Junior" }
-                    ],
-                    external: []
-                }
-            },
-            "Проектирование и разработка": {
-                "Бизнес-глоссарий / логическая модель данных": {
-                    korpus: [
-                        { name: "Задание \"Модели данных и проектирование\"", url: "https://edu.korusconsulting.ru/course/view.php?id=949", desc: "Практика по моделированию", grade: "Middle,Senior" },
-                        { name: "Задание \"Проектирование ФМД\"", url: "https://edu.korusconsulting.ru/course/view.php?id=977", desc: "Проектирование ФМД", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы глоссария", grade: "Junior" }
-                    ],
-                    external: []
-                },
-                "Модель данных": {
-                    korpus: [
-                        { name: "ER-диаграмма (тест)", url: "https://edu.korusconsulting.ru/course/view.php?id=951", desc: "Тест по ER", grade: "Junior,Middle" },
-                        { name: "Задание \"ER-диаграмма\"", url: "https://edu.korusconsulting.ru/course/view.php?id=950", desc: "Практика ER", grade: "Middle" },
-                        { name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324", desc: "Продвинутый SQL", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы моделей", grade: "Junior" },
-                        { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "Глубокие модели", grade: "Middle,Senior" }
-                    ],
-                    external: []
-                },
-                "Требования к интеграции": {
-                    korpus: [
-                        { name: "Интеграции REST", url: "https://edu.korusconsulting.ru/course/view.php?id=1391", desc: "REST API", grade: "Middle,Senior" },
-                        { name: "Интеграционные возможности 1С:Документооборот 3.0", url: "https://edu.korusconsulting.ru/course/view.php?id=618", desc: "Интеграции 1С", grade: "Middle,Senior" },
-                        { name: "Тест \"Стили интеграции\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1409", desc: "Стили интеграций", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Apache Kafka", url: "https://edu.korusconsulting.ru/course/view.php?id=1157", desc: "Потоковые данные", grade: "Middle,Senior,Прочее" }
-                    ],
-                    external: []
-                },
-                "S2T (Source-to-Target)": {
-                    korpus: [
-                        { name: "Задание \"Архитектура КХД\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1357", desc: "Проектирование КХД", grade: "Senior,Lead" },
-                        { name: "DBT", url: "https://edu.korusconsulting.ru/course/view.php?id=1159", desc: "ELT-пайплайны", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "DBT", url: "https://edu.korusconsulting.ru/course/view.php?id=1159", desc: "ELT-пайплайны", grade: "Middle,Senior" },
-                        { name: "Apache Airflow", url: "https://edu.korusconsulting.ru/enrol/index.php?id=1022", desc: "Оркестрация пайплайнов", grade: "Middle,Senior" }
-                    ],
-                    external: []
-                },
-                "Постановка на разработку": {
-                    korpus: [
-                        { name: "Постановка задач для разработчиков", url: "https://edu.korusconsulting.ru/course/view.php?id=698", desc: "Постановка задач", grade: "Middle,Senior" },
-                        { name: "Задание \"Стандарты разработки, naming convention\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1033", desc: "Стандарты", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Инструкция пользователя Youtrack", url: "https://edu.korusconsulting.ru/course/view.php?id=495", desc: "Инструмент Jira", grade: "Junior,Middle" },
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Постановка задач", grade: "Junior" }
-                    ],
-                    external: []
-                }
-            },
-            "Тестирование": {
-                "Тестирование (общее)": {
-                    korpus: [
-                        { name: "Курс. Автоматизированное тестирование", url: "https://edu.korusconsulting.ru/course/view.php?id=195", desc: "Автотесты", grade: "Middle,Senior" },
-                        { name: "Вебинар \"Основные техники тест-дизайна\"", url: "https://edu.korusconsulting.ru/course/view.php?id=768", desc: "Тест-дизайн", grade: "Junior,Middle" },
-                        { name: "Тестирование с Ванессой", url: "https://edu.korusconsulting.ru/course/view.php?id=1178", desc: "Практика тестирования", grade: "Middle" },
-                        { name: "Вебинар по автотестам", url: "https://edu.korusconsulting.ru/course/view.php?id=345", desc: "Автотесты", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы тестирования", grade: "Junior" }
-                    ],
-                    external: [
-                        { name: "Основы тестирования ПО (Stepik)", url: "https://stepik.org/course/582", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                }
-            },
-            "Анализ данных": {
-                "SQL": {
-                    korpus: [
-                        { name: "Базы данных и SQL: обучение", url: "https://edu.korusconsulting.ru/course/view.php?id=248", desc: "Базовый SQL", grade: "Junior,Middle" },
-                        { name: "Базы данных и SQL: продвинутый уровень", url: "https://edu.korusconsulting.ru/course/view.php?id=324", desc: "Продвинутый SQL", grade: "Middle,Senior" },
-                        { name: "Задание \"Типы данных SQL\"", url: "https://edu.korusconsulting.ru/course/view.php?id=976", desc: "Типы данных", grade: "Junior,Middle" },
-                        { name: "Язык запросов \"1С:Предприятия 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1241", desc: "1С-запросы", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "SQL-практика", grade: "Junior" },
-                        { name: "ClickHouse", url: "https://edu.korusconsulting.ru/enrol/index.php?id=676", desc: "Колоночная СУБД", grade: "Middle,Senior" },
-                        { name: "GreenPlum", url: "https://edu.korusconsulting.ru/enrol/index.php?id=615", desc: "MPP-СУБД", grade: "Middle,Senior" }
-                    ],
-                    external: [
-                        { name: "SQL для начинающих (Stepik)", url: "https://stepik.org/course/63054", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                },
-                "Основы статистики": {
-                    korpus: [
-                        { name: "Математические инструменты в \"1С:Предприятие 8\"", url: "https://edu.korusconsulting.ru/course/view.php?id=81", desc: "Математика в 1С", grade: "Middle,Senior" },
-                        { name: "Книга. Джордан Морроу - Как вытащить из данных максимум", url: "https://edu.korusconsulting.ru/course/view.php?id=588", desc: "Анализ данных", grade: "Junior,Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Машинное обучение (ML)", url: "https://edu.korusconsulting.ru/course/view.php?id=1240", desc: "Введение в ML", grade: "Middle,Senior" },
-                        { name: "Apache Spark", url: "https://edu.korusconsulting.ru/enrol/index.php?id=487", desc: "Обработка больших данных", grade: "Senior,Lead" }
-                    ],
-                    external: [
-                        { name: "Статистика для анализа данных (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/STAT/", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                },
-                "Качество данных": {
-                    korpus: [
-                        { name: "Задание \"Показатели качества данных\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1041", desc: "DQ-метрики", grade: "Middle,Senior" },
-                        { name: "Тестирование по Data Quality", url: "https://edu.korusconsulting.ru/course/view.php?id=1349", desc: "DQ-тесты", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "DQ-основы", grade: "Junior" }
-                    ],
-                    external: [
-                        { name: "Data Quality Fundamentals (Datacamp)", url: "https://www.datacamp.com/courses/data-quality-fundamentals", desc: "Бесплатно с базовой подпиской", grade: "Junior,Middle" }
-                    ]
-                }
-            },
-            "Работа с документами": {
-                "Документирование": {
-                    korpus: [
-                        { name: "Проектная документация работа с корпоративным шаблоном (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=629", desc: "Шаблоны документации", grade: "Junior,Middle" },
-                        { name: "Шаблоны документов", url: "https://edu.korusconsulting.ru/course/view.php?id=1019", desc: "Библиотека шаблонов", grade: "Junior,Middle" },
-                        { name: "Инструкция по составлению протоколов (мемо)", url: "https://edu.korusconsulting.ru/course/view.php?id=757", desc: "Протоколы встреч", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы документирования", grade: "Junior" },
-                        { name: "Инструкция пользователя Youtrack", url: "https://edu.korusconsulting.ru/course/view.php?id=495", desc: "Jira-документация", grade: "Junior,Middle" }
-                    ],
-                    external: []
-                },
-                "Редактура и текст": {
-                    korpus: [
-                        { name: "Курс «Идеальный русский»", url: "https://edu.korusconsulting.ru/course/view.php?id=300", desc: "Грамотность", grade: "Junior,Middle" },
-                        { name: "Микрокурс \"Деловая переписка\"", url: "https://edu.korusconsulting.ru/course/view.php?id=558", desc: "Деловая переписка", grade: "Junior,Middle" },
-                        { name: "Микрокурс \"Как общаться в мессенджерах\"", url: "https://edu.korusconsulting.ru/course/view.php?id=525", desc: "Мессенджеры", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Деловая переписка. Часть 1", url: "https://edu.korusconsulting.ru/enrol/index.php?id=558", desc: "Часть 1", grade: "Junior,Middle" },
-                        { name: "Деловая переписка: забота и уважение Часть 2", url: "https://edu.korusconsulting.ru/enrol/index.php?id=617", desc: "Часть 2", grade: "Middle,Senior" },
-                        { name: "Как общаться в мессенджерах", url: "https://edu.korusconsulting.ru/course/view.php?id=525", desc: "Мессенджеры", grade: "Junior,Middle" }
-                    ],
-                    external: [
-                        { name: "Курс «Идеальный русский» (Stepik)", url: "https://stepik.org/course/394", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                }
-            },
-            "Макетирование и основы UI/UX": {
-                "Макетирование": {
-                    korpus: [
-                        { name: "Супер Figma от VideoSmile", url: "https://edu.korusconsulting.ru/course/view.php?id=581", desc: "Figma", grade: "Junior,Middle" },
-                        { name: "Работа в Axure 7 для начинающих", url: "https://edu.korusconsulting.ru/course/view.php?id=20", desc: "Axure", grade: "Junior" },
-                        { name: "Основы проектирования интерфейсов в Axure", url: "https://edu.korusconsulting.ru/course/view.php?id=111", desc: "Прототипы", grade: "Junior,Middle" },
-                        { name: "Задание \"Прототипирование витрин\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1412", desc: "Прототипы", grade: "Middle" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы макетирования", grade: "Junior" }
-                    ],
-                    external: [
-                        { name: "Figma для начинающих (официальный)", url: "https://www.figma.com/learn", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                },
-                "Подбор типа графика / визуализация": {
-                    korpus: [
-                        { name: "Тренинг по дашбордам от DataYoga", url: "https://edu.korusconsulting.ru/course/view.php?id=106", desc: "Дашборды", grade: "Junior,Middle" },
-                        { name: "Визуализация данных (ДАР)", url: "https://edu.korusconsulting.ru/course/view.php?id=1242", desc: "Визуализация", grade: "Junior,Middle" },
-                        { name: "Книга. Ольга Базалева - Мастерство визуализации данных", url: "https://edu.korusconsulting.ru/course/view.php?id=593", desc: "Визуализация", grade: "Junior,Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Визуализация данных (ДАР)", url: "https://edu.korusconsulting.ru/course/view.php?id=1242", desc: "Визуализация", grade: "Junior,Middle" },
-                        { name: "LuxmsBI, первые шаги", url: "https://edu.korusconsulting.ru/course/view.php?id=1177", desc: "BI-инструмент", grade: "Middle,Senior" },
-                        { name: "AI-ассистент для визуализации данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1406", desc: "ИИ-визуализация", grade: "Middle,Senior" }
-                    ],
-                    external: [
-                        { name: "Визуализация данных (Skillbox)", url: "https://skillbox.ru/course/data-visualization/", desc: "Платный, диплом", grade: "Middle,Senior" }
-                    ]
-                },
-                "UX-паттерны": {
-                    korpus: [
-                        { name: "Вебинар «UX/UI дизайн»", url: "https://edu.korusconsulting.ru/course/view.php?id=334", desc: "UX/UI", grade: "Junior,Middle" },
-                        { name: "Макетирование для не-дизайнеров", url: "https://edu.korusconsulting.ru/course/view.php?id=1174", desc: "Макетирование", grade: "Junior,Middle" }
-                    ],
-                    dar: [],
-                    external: [
-                        { name: "Основы UX-дизайна (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/UX/", desc: "Бесплатно, сертификат платный", grade: "Junior,Middle" }
-                    ]
-                }
-            },
-            "Участие в Presale": {
-                "Прескейл-компетенции": {
-                    korpus: [
-                        { name: "Пресейлы: Искусство оценки, когда мало данных, но много ответственности", url: "https://edu.korusconsulting.ru/course/view.php?id=1458", desc: "Оценка в пресейле", grade: "Senior,Lead" },
-                        { name: "Вебинар \"Чек-лист как провести демонстрацию программного продукта клиенту\"", url: "https://edu.korusconsulting.ru/course/view.php?id=740", desc: "Проведение демо", grade: "Middle,Senior" },
-                        { name: "Проведение ПСИ/демонстраций (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=630", desc: "ПСИ", grade: "Middle,Senior" },
-                        { name: "Обучение пресейлов", url: "https://edu.korusconsulting.ru/course/view.php?id=177", desc: "Пресейл-подготовка", grade: "Middle,Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52", desc: "Экономика", grade: "Junior,Middle" },
-                        { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", grade: "Middle,Senior" }
-                    ],
-                    external: [
-                        { name: "Продажи и пресейл в IT (Skillbox)", url: "https://skillbox.ru/course/it-sales/", desc: "Платный, диплом", grade: "Middle,Senior,Lead" }
-                    ]
-                }
-            },
-            "Управление ожиданиями и изменениями": {
-                "Управление ожиданиями": {
-                    korpus: [
-                        { name: "Семинар по управлению ожиданиями заказчика", url: "https://edu.korusconsulting.ru/course/view.php?id=557", desc: "Управление ожиданиями", grade: "Senior,Lead" },
-                        { name: "Вебинар \"Как компании внедряют ИИ\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1060", desc: "ИИ-внедрение", grade: "Senior,Lead" },
-                        { name: "Как давать обратную связь", url: "https://edu.korusconsulting.ru/course/view.php?id=64", desc: "Обратная связь", grade: "Junior,Middle,Senior" },
-                        { name: "Переговоры", url: "https://edu.korusconsulting.ru/course/view.php?id=217", desc: "Переговоры", grade: "Middle,Senior" },
-                        { name: "Конструктивная конфронтация", url: "https://edu.korusconsulting.ru/course/view.php?id=229", desc: "Конфликты", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161", desc: "Софт-скиллы", grade: "Junior" }
-                    ],
-                    external: [
-                        { name: "Эффективные коммуникации (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/COMM/", desc: "Бесплатно", grade: "Junior,Middle,Senior" }
-                    ]
-                },
-                "Управление изменениями": {
-                    korpus: [
-                        { name: "Вебинар \"Внедрение непопулярных изменений\"", url: "https://edu.korusconsulting.ru/course/view.php?id=260", desc: "Управление изменениями", grade: "Senior,Lead" },
-                        { name: "Управление договором, требованиями и изменениями", url: "https://edu.korusconsulting.ru/course/view.php?id=747", desc: "Управление изменениями", grade: "Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Ступень 2. Я развиваю свой ДАР Наставничества", url: "https://edu.korusconsulting.ru/course/view.php?id=1165", desc: "Наставничество", grade: "Senior,Lead" }
-                    ],
-                    external: [
-                        { name: "Управление изменениями (Skillbox)", url: "https://skillbox.ru/course/change-management/", desc: "Платный, диплом", grade: "Senior,Lead" }
-                    ]
-                }
-            },
-            "Управление проектом": {
-                "Проектные методологии": {
-                    korpus: [
-                        { name: "Гибкие методологии", url: "https://edu.korusconsulting.ru/course/view.php?id=220", desc: "Agile", grade: "Junior,Middle" },
-                        { name: "Введение в проектное управление", url: "https://edu.korusconsulting.ru/course/view.php?id=1446", desc: "Основы PM", grade: "Junior,Middle" },
-                        { name: "Базовый функционал MS Project", url: "https://edu.korusconsulting.ru/course/view.php?id=31", desc: "MS Project", grade: "Junior,Middle" },
-                        { name: "Стратоплан. Про проекты", url: "https://edu.korusconsulting.ru/course/view.php?id=576", desc: "Стратоплан", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Внутренний курс: Роль участника проекта в ЦУП", url: "https://edu.korusconsulting.ru/course/view.php?id=2", desc: "Роль в проекте", grade: "Junior,Middle" },
-                        { name: "Введение в проектное управление", url: "https://edu.korusconsulting.ru/course/view.php?id=1446", desc: "Основы PM", grade: "Junior,Middle" }
-                    ],
-                    external: [
-                        { name: "Agile и Scrum (Stepik)", url: "https://stepik.org/course/107", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                },
-                "Анализ рисков": {
-                    korpus: [
-                        { name: "Риски на проектах (Power.UP XII)", url: "https://edu.korusconsulting.ru/course/view.php?id=750", desc: "Управление рисками", grade: "Senior,Lead" },
-                        { name: "Вебинар Алексея Сидоренко_Управление рисками", url: "https://edu.korusconsulting.ru/course/view.php?id=114", desc: "Риски", grade: "Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Apache Airflow", url: "https://edu.korusconsulting.ru/enrol/index.php?id=1022", desc: "Оркестрация", grade: "Middle,Senior" }
-                    ],
-                    external: [
-                        { name: "Управление рисками проекта (Skillbox)", url: "https://skillbox.ru/course/risk-management/", desc: "Платный, диплом", grade: "Senior,Lead" }
-                    ]
-                },
-                "Управление проектом (общее)": {
-                    korpus: [
-                        { name: "Книга \"Введение в управление проектами внедрения ERP-систем\"", url: "https://edu.korusconsulting.ru/course/view.php?id=1226", desc: "Управление проектами", grade: "Senior,Lead" },
-                        { name: "Курс \"Основы проектного управления\"", url: "https://edu.korusconsulting.ru/course/view.php?id=741", desc: "Основы PM", grade: "Junior,Middle" },
-                        { name: "Интенсив для РП по управлению командой", url: "https://edu.korusconsulting.ru/course/view.php?id=968", desc: "Управление командой", grade: "Senior,Lead" },
-                        { name: "Когнитивные искажения в управлении проектами", url: "https://edu.korusconsulting.ru/course/view.php?id=748", desc: "Психология PM", grade: "Senior,Lead" },
-                        { name: "Интенсив по управлению стейкхолдерами (ЗСП) на проектах", url: "https://edu.korusconsulting.ru/course/view.php?id=1204", desc: "Стейкхолдеры", grade: "Senior,Lead" },
-                        { name: "Проведение стратегических/проектных сессий", url: "https://edu.korusconsulting.ru/course/view.php?id=412", desc: "Стратегические сессии", grade: "Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Основы PM", grade: "Junior" }
-                    ],
-                    external: [
-                        { name: "Project Manager (Skillbox)", url: "https://skillbox.ru/course/project-manager/", desc: "Платный, диплом", grade: "Junior,Middle,Senior" }
-                    ]
-                },
-                "Оценка трудозатрат": {
-                    korpus: [
-                        { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52", desc: "Экономика проекта", grade: "Junior,Middle" },
-                        { name: "Основы экономики проектов (Power.UP XII)", url: "https://edu.korusconsulting.ru/course/view.php?id=745", desc: "Экономика", grade: "Junior,Middle" },
-                        { name: "Вебинар. Финансовая модель", url: "https://edu.korusconsulting.ru/course/view.php?id=458", desc: "Финансовая модель", grade: "Middle,Senior" },
-                        { name: "Финансовая отчетность. Базовые понятия", url: "https://edu.korusconsulting.ru/course/view.php?id=1284", desc: "Финансовая отчетность", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Экономика консалтинга", url: "https://edu.korusconsulting.ru/course/view.php?id=52", desc: "Экономика", grade: "Junior,Middle" },
-                        { name: "Проектный бонус", url: "https://edu.korusconsulting.ru/course/view.php?id=729", desc: "Мотивация", grade: "Junior,Middle" }
-                    ],
-                    external: []
-                },
-                "Опыт реализации проектов": {
-                    korpus: [
-                        { name: "Программа обучения стажеров 1С", url: "https://edu.korusconsulting.ru/course/view.php?id=378", desc: "Стажировка", grade: "Junior" },
-                        { name: "Курс молодого бойца", url: "https://edu.korusconsulting.ru/course/view.php?id=232", desc: "Адаптация", grade: "Junior" },
-                        { name: "Менторинг", url: "https://edu.korusconsulting.ru/course/view.php?id=449", desc: "Наставничество", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Обучение для младших аналитиков", url: "https://edu.korusconsulting.ru/course/view.php?id=1163", desc: "Практика", grade: "Junior" },
-                        { name: "Обучение для младших инженеров данных", url: "https://edu.korusconsulting.ru/course/view.php?id=1162", desc: "Практика", grade: "Junior" }
-                    ],
-                    external: []
-                },
-                "Работа в режиме многозадачности": {
-                    korpus: [
-                        { name: "Тренинг \"Тайм-менеджмент без стресса\"", url: "https://edu.korusconsulting.ru/course/view.php?id=840", desc: "Тайм-менеджмент", grade: "Junior,Middle" },
-                        { name: "Управление рабочим временем", url: "https://edu.korusconsulting.ru/course/view.php?id=722", desc: "Тайм-менеджмент", grade: "Junior,Middle" },
-                        { name: "Тайм-менеджмент (общий курс)", url: "https://edu.korusconsulting.ru/course/view.php?id=12", desc: "Тайм-менеджмент", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Таймшиты. Учёт рабочего времени", url: "https://edu.korusconsulting.ru/course/view.php?id=569", desc: "Учёт времени", grade: "Junior,Middle" }
-                    ],
-                    external: [
-                        { name: "Тайм-менеджмент (Stepik)", url: "https://stepik.org/course/135", desc: "Бесплатный курс", grade: "Junior,Middle" }
-                    ]
-                }
-            },
-            "HR и развитие сотрудников": {
-                "Развитие сотрудников": {
-                    korpus: [
-                        { name: "Как составить ИПР на примере 1С", url: "https://edu.korusconsulting.ru/course/view.php?id=503", desc: "ИПР", grade: "Senior,Lead" },
-                        { name: "Менторинг 2.0", url: "https://edu.korusconsulting.ru/course/view.php?id=449", desc: "Наставничество", grade: "Senior,Lead" },
-                        { name: "Курс для руководителей Лига Лидеров КОРУС", url: "https://edu.korusconsulting.ru/course/view.php?id=1385", desc: "Лидерство", grade: "Lead" },
-                        { name: "Курс ДМХ (Должен-Может-Хочет)", url: "https://edu.korusconsulting.ru/course/view.php?id=131", desc: "ДМХ", grade: "Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Обучение руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820", desc: "HR-инструменты", grade: "Senior,Lead" },
-                        { name: "Ступень 1. Бизнес-игра по Наставничеству", url: "https://edu.korusconsulting.ru/course/view.php?id=1164", desc: "Наставничество", grade: "Senior,Lead" },
-                        { name: "Ступень 2. Я развиваю свой ДАР Наставничества", url: "https://edu.korusconsulting.ru/course/view.php?id=1165", desc: "Наставничество", grade: "Senior,Lead" }
-                    ],
-                    external: [
-                        { name: "Развитие сотрудников и наставничество (Skillbox)", url: "https://skillbox.ru/course/mentoring/", desc: "Платный, диплом", grade: "Senior,Lead" }
-                    ]
-                },
-                "Найм и оценка": {
-                    korpus: [
-                        { name: "Школа Руководителя MONS", url: "https://edu.korusconsulting.ru/course/view.php?id=500", desc: "Руководитель", grade: "Senior,Lead" },
-                        { name: "ДАР: Обучение Руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820", desc: "HR-процессы", grade: "Senior,Lead" }
-                    ],
-                    dar: [
-                        { name: "Обучение руководителей групп по HR-процессам", url: "https://edu.korusconsulting.ru/course/view.php?id=820", desc: "HR-процессы", grade: "Senior,Lead" }
-                    ],
-                    external: [
-                        { name: "HR-менеджмент (Skillbox)", url: "https://skillbox.ru/course/hr-manager/", desc: "Платный, диплом", grade: "Senior,Lead" }
-                    ]
-                }
-            },
-            "Презентации и обучение": {
-                "Презентация результатов": {
-                    korpus: [
-                        { name: "Тренинг «Мастерство презентаций»", url: "https://edu.korusconsulting.ru/course/view.php?id=990", desc: "Презентации", grade: "Junior,Middle,Senior" },
-                        { name: "KORUS Челлендж \"Делаем крутые слайды\"", url: "https://edu.korusconsulting.ru/course/view.php?id=100", desc: "Слайды", grade: "Junior,Middle" },
-                        { name: "Подготовка презентаций и выступлений", url: "https://edu.korusconsulting.ru/course/view.php?id=1182", desc: "Презентации", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", grade: "Junior,Middle,Senior" },
-                        { name: "Обучение по мягким навыкам для младших специалистов", url: "https://edu.korusconsulting.ru/course/view.php?id=1161", desc: "Софт-скиллы", grade: "Junior" }
-                    ],
-                    external: [
-                        { name: "Ораторское мастерство (Skillbox)", url: "https://skillbox.ru/course/oratory/", desc: "Платный, диплом", grade: "Junior,Middle,Senior" }
-                    ]
-                },
-                "Обучение пользователей": {
-                    korpus: [
-                        { name: "Обучение сотрудников заказчика, проведение ОПЭ", url: "https://edu.korusconsulting.ru/course/view.php?id=705", desc: "Обучение пользователей", grade: "Middle,Senior" },
-                        { name: "Обучение типовому функционалу Битрикс24", url: "https://edu.korusconsulting.ru/course/view.php?id=176", desc: "Обучение Битрикс", grade: "Junior,Middle" }
-                    ],
-                    dar: [
-                        { name: "Ступень 1. Бизнес-игра по Наставничеству", url: "https://edu.korusconsulting.ru/course/view.php?id=1164", desc: "Наставничество", grade: "Middle,Senior" }
-                    ],
-                    external: []
-                },
-                "Демо заказчику": {
-                    korpus: [
-                        { name: "Чек-лист как провести демонстрацию программного продукта клиенту", url: "https://edu.korusconsulting.ru/course/view.php?id=740", desc: "Демо-презентация", grade: "Middle,Senior" },
-                        { name: "Проведение ПСИ/демонстраций (BTX)", url: "https://edu.korusconsulting.ru/course/view.php?id=630", desc: "Демо", grade: "Middle,Senior" }
-                    ],
-                    dar: [
-                        { name: "Искусство самопрезентации", url: "https://edu.korusconsulting.ru/course/view.php?id=1160", desc: "Самопрезентация", grade: "Middle,Senior" }
-                    ],
-                    external: []
-                }
-            },
-            "ИИ-компетенции": {
-                "Управление ИИ-проектами": {
-                    korpus: [],
-                    dar: [],
-                    external: [
-                        { name: "Искусственный интеллект и машинное обучение в проектах (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/AI/", desc: "Бесплатно, сертификат ~1000₽", grade: "Senior,Lead" },
-                        { name: "AI для менеджеров (Stepik)", url: "https://stepik.org/course/169571", desc: "Бесплатно, сертификат ~500₽", grade: "Senior,Lead" },
-                        { name: "Управление проектами в сфере ИИ (Skillbox)", url: "https://skillbox.ru/course/ai-project-management/", desc: "≈50 000₽, диплом", grade: "Senior,Lead" },
-                        { name: "ML Project Management (Нетология)", url: "https://netology.ru/programs/ml-project", desc: "≈60 000₽, сертификат", grade: "Senior,Lead" }
-                    ]
-                },
-                "Создание ИИ-агентов": {
-                    korpus: [],
-                    dar: [],
-                    external: [
-                        { name: "Building AI Agents with LangChain (DeepLearning.AI)", url: "https://www.deeplearning.ai/short-courses/langchain/", desc: "Бесплатный", grade: "Middle,Senior" },
-                        { name: "Создание чат-ботов на Python (Stepik)", url: "https://stepik.org/course/153445", desc: "Бесплатный", grade: "Middle,Senior" },
-                        { name: "Разработка на Python и ИИ-агенты (Яндекс.Практикум)", url: "https://practicum.yandex.ru/python-ai/", desc: "≈80 000₽, диплом", grade: "Middle,Senior,Прочее" },
-                        { name: "ИИ-агенты и автономные системы (Skillbox)", url: "https://skillbox.ru/course/ai-agents/", desc: "≈70 000₽, сертификат", grade: "Middle,Senior,Прочее" }
-                    ]
-                },
-                "Написание промптов": {
-                    korpus: [],
-                    dar: [],
-                    external: [
-                        { name: "Промпт-инжиниринг: основы (Stepik)", url: "https://stepik.org/course/126239", desc: "Бесплатно, сертификат ≈500₽", grade: "Junior,Middle,Senior" },
-                        { name: "Промпты для ChatGPT: практика (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/PROMPT/", desc: "Бесплатно, сертификат ≈1000₽", grade: "Junior,Middle,Senior" },
-                        { name: "Промпт-инжиниринг (Skillbox)", url: "https://skillbox.ru/course/prompt-engineering/", desc: "≈40 000₽, диплом", grade: "Middle,Senior" },
-                        { name: "Нейросети и промпты (Нетология)", url: "https://netology.ru/programs/ai-prompt", desc: "≈35 000₽, сертификат", grade: "Middle,Senior" },
-                        { name: "Промпт-инжиниринг от новичка до архитектора (Игорь Степанов)", url: "https://t.me/stepanov_ai", desc: "Авторский курс ≈30 000–60 000₽, сертификат", grade: "Middle,Senior,Lead" }
-                    ]
-                },
-                "ИИ для аналитиков": {
-                    korpus: [],
-                    dar: [],
-                    external: [
-                        { name: "Искусственный интеллект и машинное обучение (Открытое образование)", url: "https://openedu.ru/course/ITMOUniversity/ML/", desc: "Бесплатно, сертификат ≈1000₽", grade: "Junior,Middle" },
-                        { name: "Машинное обучение для анализа данных (Stepik)", url: "https://stepik.org/course/245", desc: "Бесплатно, сертификат ≈500₽", grade: "Junior,Middle,Senior" },
-                        { name: "Машинное обучение в аналитике (Нетология)", url: "https://netology.ru/programs/ml-analytics", desc: "≈90 000₽, диплом", grade: "Middle,Senior,Lead" },
-                        { name: "Data Science и AI (Яндекс.Практикум)", url: "https://practicum.yandex.ru/data-science/", desc: "≈100 000₽, диплом", grade: "Middle,Senior,Lead" }
-                    ]
-                }
-            }
-        };
+<footer class="k-footer">
+<div class="k-footer-inner">
+<div>© 2019 – 2026 Корпоративный университет КОРУС Консалтинг</div>
+<div><a href="#">Сводка хранения данных</a> · <a href="#">Справка</a> · <a href="#">Telegram</a></div>
+</div>
+</footer>
 
-        // ====================================================================
-        // 2. ЛОГИКА РЕНДЕРИНГА КАТЕГОРИЙ И КУРСОВ
-        // ====================================================================
-        const categories = Object.keys(data);
-        const categoryContainer = document.getElementById('categoryContainer');
-        const gradeChips = document.querySelectorAll('.chip');
-        const searchInput = document.getElementById('searchInput');
-        const coursesContainer = document.getElementById('coursesContainer');
+<button class="chat-bubble" id="chatBubble" aria-label="Открыть чат-помощник">💬</button>
+<div class="chat-modal" id="chatModal">
+<div class="chat-header"><span>🤖 Помощник по курсам</span><button id="closeChatBtn">✕</button></div>
+<div class="chat-messages" id="chatMessages">
+<div class="chat-message bot">👋 Я помогу подобрать курсы под ваш запрос! Напишите, что ищете (например, «SQL для мидла»).</div>
+</div>
+<div class="chat-input">
+<input type="text" id="chatInput" placeholder="Ваш вопрос..." autofocus>
+<button id="chatSendBtn">Отправить</button>
+</div>
+</div>
 
-        let selectedCompetence = null;
-        let selectedGrade = 'all';
+<script src="catalog.js"></script>
+<script src="catalog-courses.js"></script>
+<script>
+const data = window.KORUS_COURSES.data;
+const DPO_RAW = window.KORUS_COURSES.DPO_RAW;
 
-        function renderCategories() {
-            categoryContainer.innerHTML = '';
-            categories.forEach(category => {
-                const competences = Object.keys(data[category]);
-                const catTitle = document.createElement('div');
-                catTitle.className = 'category-title';
-                catTitle.textContent = category;
-                categoryContainer.appendChild(catTitle);
+const GRADE_MAP = {J:'Junior',M:'Middle',S:'Senior',L:'Lead',P:'Прочее'};
+const DPO = DPO_RAW.map(function(r) {
+  return {
+    name: r[0], url: r[1], provider: r[2], duration: r[3], price: r[4],
+    grades: r[5].split(',').map(function(g) { return GRADE_MAP[g.trim()] || g.trim(); }),
+    competencies: r[6].split('|').map(function(s) { return s.trim(); }),
+    type: r[7]
+  };
+});
 
-                const ul = document.createElement('ul');
-                competences.forEach(comp => {
-                    const li = document.createElement('li');
-                    li.textContent = comp;
-                    li.dataset.competence = comp;
-                    li.dataset.category = category;
-                    li.addEventListener('click', function() {
-                        document.querySelectorAll('#categoryContainer li').forEach(el => el.classList.remove('active'));
-                        this.classList.add('active');
-                        selectedCompetence = comp;
-                        renderCourses();
-                    });
-                    ul.appendChild(li);
-                });
-                categoryContainer.appendChild(ul);
-            });
+const COMPETENCE_ALIASES = {
+  "Анализ и формулирование требований (ФТ)": "Анализ и формулирование ФТ",
+  "Анализ и формулирование требований (НФТ)": "Анализ и формулирование НФТ",
+  "Управление ожиданиями и информирование о трудностях": "Управление ожиданиями",
+  "Подбор типа графика под задачу": "Подбор типа графика / визуализация",
+  "Найм и оценка уровня кандидатов/сотрудников": "Найм и оценка",
+  "Презентация результатов работы": "Презентация результатов"
+};
 
-            if (selectedCompetence) {
-                const li = document.querySelector(`#categoryContainer li[data-competence="${selectedCompetence}"]`);
-                if (li) li.classList.add('active');
-            } else {
-                const firstLi = document.querySelector('#categoryContainer li');
-                if (firstLi) {
-                    firstLi.classList.add('active');
-                    selectedCompetence = firstLi.dataset.competence;
-                    renderCourses();
-                }
-            }
-        }
+function getBooksForCompetence(compName) {
+  var realComp = COMPETENCE_ALIASES[compName] || compName;
+  var map = (KORUS_CATALOG && KORUS_CATALOG.books) || {};
+  var list = map[realComp] || map[compName] || [];
+  var defaultUrl = (KORUS_CATALOG && KORUS_CATALOG.bookUrl) || "";
+  return list.map(function(b) { return Object.assign({}, b, {url: b.url || defaultUrl}); });
+}
+function getTrainersForCompetence(compName) {
+  var realComp = COMPETENCE_ALIASES[compName] || compName;
+  var map = (KORUS_CATALOG && KORUS_CATALOG.trainers) || {};
+  return map[realComp] || map[compName] || [];
+}
+function getCertsForCompetence(compName) {
+  var realComp = COMPETENCE_ALIASES[compName] || compName;
+  var map = (KORUS_CATALOG && KORUS_CATALOG.certs) || {};
+  return map[realComp] || map[compName] || [];
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
 
-        function getFilteredCourses(competence, grade) {
-            const category = findCategoryForCompetence(competence);
-            if (!category) return { korpus: [], dar: [], external: [] };
-            const compData = data[category][competence];
-            if (!compData) return { korpus: [], dar: [], external: [] };
+const categories = Object.keys(data);
+const categoryContainer = document.getElementById('categoryContainer');
+const gradeChips = document.querySelectorAll('.k-chip');
+const searchInput = document.getElementById('searchInput');
+const coursesContainer = document.getElementById('coursesContainer');
 
-            const filterByGrade = (course) => {
-                if (grade === 'all') return true;
-                const grades = course.grade.split(',').map(g => g.trim());
-                return grades.includes(grade);
-            };
+let selectedCompetence = null;
+let selectedGrade = 'all';
 
-            return {
-                korpus: compData.korpus.filter(filterByGrade),
-                dar: compData.dar.filter(filterByGrade),
-                external: compData.external.filter(filterByGrade)
-            };
-        }
+function renderCategories() {
+  categoryContainer.innerHTML = '';
+  categories.forEach(function(category) {
+    var catTitle = document.createElement('div');
+    catTitle.className = 'k-category-title';
+    catTitle.textContent = category;
+    categoryContainer.appendChild(catTitle);
+    var ul = document.createElement('ul');
+    Object.keys(data[category]).forEach(function(comp) {
+      var li = document.createElement('li');
+      li.textContent = comp;
+      li.dataset.competence = comp;
+      li.addEventListener('click', function() {
+        document.querySelectorAll('#categoryContainer li').forEach(function(el) { el.classList.remove('active'); });
+        this.classList.add('active');
+        selectedCompetence = comp;
+        renderCourses();
+      });
+      ul.appendChild(li);
+    });
+    categoryContainer.appendChild(ul);
+  });
+  if (selectedCompetence) {
+    var li = document.querySelector('#categoryContainer li[data-competence="' + selectedCompetence + '"]');
+    if (li) li.classList.add('active');
+  } else {
+    var firstLi = document.querySelector('#categoryContainer li');
+    if (firstLi) {
+      firstLi.classList.add('active');
+      selectedCompetence = firstLi.dataset.competence;
+      renderCourses();
+    }
+  }
+}
 
-        function findCategoryForCompetence(competence) {
-            for (const category of categories) {
-                if (data[category][competence]) return category;
-            }
-            return null;
-        }
+function findCategoryForCompetence(competence) {
+  for (var i = 0; i < categories.length; i++) {
+    if (data[categories[i]][competence]) return categories[i];
+  }
+  return null;
+}
 
-        function renderCourses() {
-            if (!selectedCompetence) {
-                coursesContainer.innerHTML = '<div class="empty-state">Выберите компетенцию</div>';
-                return;
-            }
+function dpoShownHere(course, realComp) {
+  return true;
+}
 
-            const filtered = getFilteredCourses(selectedCompetence, selectedGrade);
-            const searchTerm = searchInput.value.trim().toLowerCase();
-            const filterByName = (items) => {
-                if (!searchTerm) return items;
-                return items.filter(item => item.name.toLowerCase().includes(searchTerm));
-            };
+function getDPOForCompetence(competence, grade) {
+  var realComp = COMPETENCE_ALIASES[competence] || competence;
+  return DPO.filter(function(c) {
+    if (!c.competencies.includes(realComp) && !c.competencies.includes(competence)) return false;
+    if (!dpoShownHere(c, realComp)) return false;
+    if (grade === 'all') return true;
+    return c.grades.includes(grade);
+  });
+}
 
-            const korpus = filterByName(filtered.korpus);
-            const dar = filterByName(filtered.dar);
-            const external = filterByName(filtered.external);
+function renderCourses() {
+  if (!selectedCompetence) {
+    coursesContainer.innerHTML = '<div class="k-empty">Выберите компетенцию</div>';
+    return;
+  }
+  var cat = findCategoryForCompetence(selectedCompetence);
+  var compData = data[cat][selectedCompetence];
+  var searchTerm = searchInput.value.trim().toLowerCase();
 
-            let html = `<div class="competence-group"><div class="competence-title">${selectedCompetence}</div>`;
+  var filterByName = function(arr) {
+    if (!searchTerm) return arr;
+    return arr.filter(function(c) { return c.name.toLowerCase().includes(searchTerm); });
+  };
+  var filterByGrade = function(arr) {
+    if (selectedGrade === 'all') return arr;
+    return arr.filter(function(c) { return c.grade.split(',').map(function(g) { return g.trim(); }).includes(selectedGrade); });
+  };
 
-            if (korpus.length > 0) {
-                html += `
-                    <div class="source-block">
-                        <div class="source-header">
-                            <img src="korus-logo.png" alt="КОРУС" onerror="this.style.display='none'">
-                            Курсы КОРУС
-                        </div>
-                        <div class="course-grid">
-                `;
-                korpus.forEach(c => { html += buildCourseCard(c, 'КОРУС'); });
-                html += `</div></div>`;
-            }
+  var korpus = filterByName(filterByGrade(compData.korpus || []));
+  var dar = filterByName(filterByGrade(compData.dar || []));
+  var external = filterByName(compData.external || []);
+  var dpo = filterByName(getDPOForCompetence(selectedCompetence, selectedGrade));
 
-            if (dar.length > 0) {
-                html += `
-                    <div class="source-block">
-                        <div class="source-header">
-                            <img src="dar-logo.png" alt="ДАР" onerror="this.style.display='none'">
-                            Курсы ДАР
-                        </div>
-                        <div class="course-grid">
-                `;
-                dar.forEach(c => { html += buildCourseCard(c, 'ДАР'); });
-                html += `</div></div>`;
-            }
+  var books = getBooksForCompetence(selectedCompetence);
+  var trainers = getTrainersForCompetence(selectedCompetence);
+  var certs = getCertsForCompetence(selectedCompetence);
+  if (searchTerm) {
+    books = books.filter(function(b) { return (b.title || '').toLowerCase().includes(searchTerm) || (b.author || '').toLowerCase().includes(searchTerm); });
+    trainers = trainers.filter(function(t) { return (t.name || '').toLowerCase().includes(searchTerm); });
+    certs = certs.filter(function(c) { return (c.name || '').toLowerCase().includes(searchTerm) || (c.provider || '').toLowerCase().includes(searchTerm); });
+  }
 
-            if (external.length > 0) {
-                html += `
-                    <div class="source-block">
-                        <div class="source-header">
-                            <span style="font-size:20px;">🌐</span> Внешние курсы
-                        </div>
-                        <div class="course-grid">
-                `;
-                external.forEach(c => { html += buildCourseCard(c, 'Внешний'); });
-                html += `</div></div>`;
-            }
+  var html = '<div class="k-competence-group"><div class="k-competence-title">' + escapeHtml(selectedCompetence) + '</div>';
 
-            if (korpus.length === 0 && dar.length === 0 && external.length === 0) {
-                html += `<div class="empty-state">Нет курсов для этой компетенции и грейда</div>`;
-            }
-            html += `</div>`;
-            coursesContainer.innerHTML = html;
-        }
+  if (korpus.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot"></span>Курсы КОРУС</div><div class="k-course-grid">';
+    korpus.forEach(function(c) { html += buildCourseCard(c, 'КОРУС'); });
+    html += '</div></div>';
+  }
+  if (dar.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot dar"></span>Курсы ДАР</div><div class="k-course-grid">';
+    dar.forEach(function(c) { html += buildCourseCard(c, 'ДАР'); });
+    html += '</div></div>';
+  }
+  if (external.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot ext"></span>Внешние курсы (бесплатные)</div><div class="k-course-grid">';
+    external.forEach(function(c) { html += buildExternalCard(c); });
+    html += '</div></div>';
+  }
+  if (dpo.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot dpo"></span>Курсы ДПО</div><div class="k-course-grid">';
+    dpo.forEach(function(c) { html += buildDPOCard(c); });
+    html += '</div></div>';
+  }
+  if (books.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot book"></span>Литература</div><div class="k-course-grid">';
+    books.forEach(function(b) { html += buildBookCard(b); });
+    html += '</div></div>';
+  }
+  if (trainers.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot trainer"></span>Тренажёры</div><div class="k-course-grid">';
+    trainers.forEach(function(t) { html += buildTrainerCard(t); });
+    html += '</div></div>';
+  }
+  if (certs.length) {
+    html += '<div class="k-source-block"><div class="k-source-header"><span class="k-source-dot cert"></span>Сертификации</div><div class="k-course-grid">';
+    certs.forEach(function(c) { html += buildCertCard(c); });
+    html += '</div></div>';
+  }
 
-        function buildCourseCard(course, source) {
-            const desc = course.desc || 'Описание не указано';
-            return `
-                <div class="course-card" data-desc="${desc.replace(/"/g, '&quot;')}">
-                    <a href="${course.url}" target="_blank">${course.name}</a>
-                    <div class="meta">
-                        <span class="grade">${course.grade}</span>
-                        <span class="source">${source}</span>
-                    </div>
-                    <div class="popover-text">${desc}</div>
-                </div>
-            `;
-        }
+  if (!korpus.length && !dar.length && !external.length && !dpo.length && !books.length && !trainers.length && !certs.length) {
+    html += '<div class="k-empty">Нет материалов для этой компетенции и грейда</div>';
+  }
 
-        gradeChips.forEach(chip => {
-            chip.addEventListener('click', function() {
-                gradeChips.forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                selectedGrade = this.dataset.grade;
-                renderCourses();
-            });
+  html += '</div>';
+  coursesContainer.innerHTML = html;
+}
+
+function buildCourseCard(c, source) {
+  var desc = c.desc || 'Описание не указано';
+  return '<div class="k-course-card"><a href="' + c.url + '" target="_blank" rel="noopener">' + escapeHtml(c.name) + '</a>'
+    + '<div class="k-meta"><span class="k-grade">' + escapeHtml(c.grade) + '</span><span class="k-source-tag">' + source + '</span></div>'
+    + '<div class="k-popover">' + escapeHtml(desc) + '</div></div>';
+}
+function buildExternalCard(c) {
+  var desc = c.desc || 'Бесплатный курс';
+  var prov = c.provider ? '<span class="k-provider">' + escapeHtml(c.provider) + '</span>' : '';
+  var dur = c.duration ? '<span class="k-duration">' + escapeHtml(c.duration) + '</span>' : '';
+  return '<div class="k-course-card"><a href="' + c.url + '" target="_blank" rel="noopener">' + escapeHtml(c.name) + '</a>'
+    + '<div class="k-meta">' + prov + dur + '<span class="k-price">Бесплатно</span><span class="k-grade">' + escapeHtml(c.grade || '') + '</span></div>'
+    + '<div class="k-popover">' + escapeHtml(desc) + '</div></div>';
+}
+function buildDPOCard(c) {
+  var grades = c.grades.join(',');
+  return '<div class="k-course-card"><a href="' + c.url + '" target="_blank" rel="noopener">' + escapeHtml(c.name) + '</a>'
+    + '<div class="k-meta">'
+    + '<span class="k-provider">' + escapeHtml(c.provider) + '</span>'
+    + '<span class="k-duration">' + escapeHtml(c.duration) + '</span>'
+    + '<span class="k-price">' + escapeHtml(c.price) + '</span>'
+    + '<span class="k-grade">' + escapeHtml(grades) + '</span>'
+    + '</div></div>';
+}
+function buildBookCard(b) {
+  var author = b.author ? '<span class="k-author">' + escapeHtml(b.author) + '</span>' : '';
+  var note = b.note ? '<span class="k-note">' + escapeHtml(b.note) + '</span>' : '';
+  return '<div class="k-course-card"><a href="' + b.url + '" target="_blank" rel="noopener">📖 ' + escapeHtml(b.title) + '</a>'
+    + '<div class="k-meta">' + author + '</div>' + note + '</div>';
+}
+function buildTrainerCard(t) {
+  var desc = t.desc || '';
+  return '<div class="k-course-card"><a href="' + t.url + '" target="_blank" rel="noopener">🎯 ' + escapeHtml(t.name) + '</a>'
+    + '<div class="k-meta"><span class="k-source-tag">Тренажёр</span></div>'
+    + (desc ? '<div class="k-popover">' + escapeHtml(desc) + '</div>' : '') + '</div>';
+}
+function buildCertCard(c) {
+  var prov = c.provider ? '<span class="k-provider">' + escapeHtml(c.provider) + '</span>' : '';
+  var price = c.price ? '<span class="k-price">' + escapeHtml(c.price) + '</span>' : '';
+  return '<div class="k-course-card"><a href="' + c.url + '" target="_blank" rel="noopener">🎓 ' + escapeHtml(c.name) + '</a>'
+    + '<div class="k-meta">' + prov + price + '</div>'
+    + (c.requirements ? '<span class="k-note">' + escapeHtml(c.requirements) + '</span>' : '') + '</div>';
+}
+
+gradeChips.forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    gradeChips.forEach(function(c) { c.classList.remove('active'); });
+    this.classList.add('active');
+    selectedGrade = this.dataset.grade;
+    renderCourses();
+  });
+});
+searchInput.addEventListener('input', renderCourses);
+renderCategories();
+
+// Чат
+var chatBubble = document.getElementById('chatBubble');
+var chatModal = document.getElementById('chatModal');
+var closeChatBtn = document.getElementById('closeChatBtn');
+var chatMessagesEl = document.getElementById('chatMessages');
+var chatInput = document.getElementById('chatInput');
+var chatSendBtn = document.getElementById('chatSendBtn');
+
+function addMessage(role, text, isLoading) {
+  var div = document.createElement('div');
+  div.className = 'chat-message ' + role;
+  if (isLoading) div.id = 'loading-msg';
+  if (text.indexOf('<a') !== -1 || text.indexOf('<div') !== -1) div.innerHTML = text;
+  else div.textContent = text;
+  chatMessagesEl.appendChild(div);
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+  return div;
+}
+function getAllItems() {
+  var all = [];
+  Object.keys(data).forEach(function(category) {
+    Object.keys(data[category]).forEach(function(comp) {
+      var courses = data[category][comp];
+      ['korpus','dar'].forEach(function(src) {
+        (courses[src] || []).forEach(function(c) {
+          all.push({name: c.name, url: c.url, grade: c.grade, desc: c.desc, competence: comp, category: category, kind: 'course'});
         });
+      });
+      (courses.external || []).forEach(function(c) {
+        all.push({name: c.name, url: c.url, grade: c.grade || '', desc: c.desc, competence: comp, category: category, kind: 'external'});
+      });
+    });
+  });
+  DPO.forEach(function(c) {
+    all.push({name: c.name, url: c.url, grade: c.grades.join(','), desc: c.competencies.join(', '), competence: 'ДПО', category: c.type === 'a' ? 'ДПО Аналитика' : 'ДПО ИИ', kind: 'dpo'});
+  });
+  var booksMap = (KORUS_CATALOG && KORUS_CATALOG.books) || {};
+  Object.keys(booksMap).forEach(function(comp) {
+    booksMap[comp].forEach(function(b) {
+      all.push({name: b.title, url: b.url || KORUS_CATALOG.bookUrl, grade: '', desc: b.author || '', competence: comp, category: 'Книга', kind: 'book'});
+    });
+  });
+  var trainersMap = (KORUS_CATALOG && KORUS_CATALOG.trainers) || {};
+  Object.keys(trainersMap).forEach(function(comp) {
+    trainersMap[comp].forEach(function(t) {
+      all.push({name: t.name, url: t.url, grade: '', desc: t.desc || '', competence: comp, category: 'Тренажёр', kind: 'trainer'});
+    });
+  });
+  var certsMap = (KORUS_CATALOG && KORUS_CATALOG.certs) || {};
+  Object.keys(certsMap).forEach(function(comp) {
+    certsMap[comp].forEach(function(c) {
+      all.push({name: c.name, url: c.url, grade: '', desc: c.provider || '', competence: comp, category: 'Сертификация', kind: 'cert'});
+    });
+  });
+  return all;
+}
+function findCoursesLocal(query) {
+  var words = query.toLowerCase().split(/\s+/).filter(function(w) { return w.length > 2; });
+  if (!words.length) return '😕 Напишите более конкретный запрос, например: "SQL для мидла".';
+  var all = getAllItems();
+  var scored = all.map(function(course) {
+    var name = course.name.toLowerCase();
+    var desc = (course.desc || '').toLowerCase();
+    var comp = (course.competence || '').toLowerCase();
+    var cat = (course.category || '').toLowerCase();
+    var score = 0;
+    words.forEach(function(word) {
+      if (name.includes(word)) score += 5;
+      if (desc.includes(word)) score += 3;
+      if (comp.includes(word)) score += 2;
+      if (cat.includes(word)) score += 2;
+    });
+    return Object.assign({}, course, {score: score});
+  });
+  var found = scored.filter(function(c) { return c.score > 0; }).sort(function(a, b) { return b.score - a.score; }).slice(0, 5);
+  if (!found.length) return '😕 По вашему запросу ничего не найдено.';
+  var list = found.map(function(c, idx) {
+    var icon = c.kind === 'book' ? '📖 ' : c.kind === 'trainer' ? '🎯 ' : c.kind === 'cert' ? '🎓 ' : '';
+    return (idx + 1) + '. <a href="' + c.url + '" target="_blank" class="course-link">' + icon + escapeHtml(c.name) + '</a> (' + escapeHtml(c.competence) + ')';
+  }).join('<br>');
+  return '📚 Нашёл материалы:<br><div class="course-list">' + list + '</div>';
+}
+function handleChatQuery() {
+  var question = chatInput.value.trim();
+  if (!question) return;
+  chatInput.value = '';
+  addMessage('user', question);
+  var loadingMsg = addMessage('bot', '⏳ Ищу материалы...', true);
+  try {
+    var answer = findCoursesLocal(question);
+    if (loadingMsg) loadingMsg.remove();
+    addMessage('bot', answer);
+  } catch (err) {
+    if (loadingMsg) loadingMsg.remove();
+    addMessage('bot', '❌ Ошибка: ' + err.message);
+  }
+}
+chatBubble.addEventListener('click', function() { chatModal.classList.toggle('open'); if (chatModal.classList.contains('open')) chatInput.focus(); });
+closeChatBtn.addEventListener('click', function() { chatModal.classList.remove('open'); });
+document.addEventListener('click', function(e) { if (chatModal.classList.contains('open') && !chatModal.contains(e.target) && e.target !== chatBubble) chatModal.classList.remove('open'); });
+chatSendBtn.addEventListener('click', handleChatQuery);
+chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); handleChatQuery(); } });
 
-        searchInput.addEventListener('input', renderCourses);
-        renderCategories();
-
-        // ====================================================================
-        // 3. ЧАТ-ВИДЖЕТ С ЛОКАЛЬНЫМ ПОИСКОМ
-        // ====================================================================
-        const chatBubble = document.getElementById('chatBubble');
-        const chatModal = document.getElementById('chatModal');
-        const closeChatBtn = document.getElementById('closeChatBtn');
-        const chatMessagesEl = document.getElementById('chatMessages');
-        const chatInput = document.getElementById('chatInput');
-        const chatSendBtn = document.getElementById('chatSendBtn');
-
-        let chatHistory = [];
-
-        function addMessage(role, text, isLoading = false) {
-            const div = document.createElement('div');
-            div.className = `chat-message ${role}`;
-            if (isLoading) div.id = 'loading-msg';
-            if (text.includes('<a') || text.includes('<div')) {
-                div.innerHTML = text;
-            } else {
-                div.textContent = text;
-            }
-            chatMessagesEl.appendChild(div);
-            chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-            return div;
-        }
-
-        function getAllCourses() {
-            let all = [];
-            for (const category of Object.keys(data)) {
-                for (const comp of Object.keys(data[category])) {
-                    const courses = data[category][comp];
-                    ['korpus', 'dar', 'external'].forEach(src => {
-                        courses[src].forEach(c => {
-                            all.push({
-                                name: c.name,
-                                url: c.url,
-                                grade: c.grade,
-                                desc: c.desc,
-                                source: src,
-                                competence: comp,
-                                category: category
-                            });
-                        });
-                    });
-                }
-            }
-            return all;
-        }
-
-        function findCoursesLocal(query) {
-            const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-            if (words.length === 0) {
-                return '😕 Напишите более конкретный запрос, например: "SQL для мидла" или "курсы по управлению проектами".';
-            }
-
-            const allCourses = getAllCourses();
-            const scored = allCourses.map(course => {
-                const name = course.name.toLowerCase();
-                const desc = (course.desc || '').toLowerCase();
-                const comp = course.competence.toLowerCase();
-                const cat = course.category.toLowerCase();
-                let score = 0;
-                words.forEach(word => {
-                    if (name.includes(word)) score += 5;
-                    if (desc.includes(word)) score += 3;
-                    if (comp.includes(word)) score += 2;
-                    if (cat.includes(word)) score += 2;
-                    if (course.grade.toLowerCase().includes(word)) score += 1;
-                });
-                return { ...course, score };
-            });
-
-            const found = scored.filter(c => c.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
-
-            if (found.length === 0) {
-                return '😕 По вашему запросу ничего не найдено. Попробуйте переформулировать или уточнить тему.';
-            }
-
-            let list = found.map((c, idx) =>
-                `${idx+1}. <a href="${c.url}" target="_blank" class="course-link">${c.name}</a> (${c.grade}, ${c.category} / ${c.competence})`
-            ).join('<br>');
-
-            return `📚 По вашему запросу я нашёл следующие курсы:<br><div class="course-list">${list}</div>`;
-        }
-
-        async function handleChatQuery() {
-            const question = chatInput.value.trim();
-            if (!question) return;
-            chatInput.value = '';
-
-            addMessage('user', question);
-            chatHistory.push({ role: 'user', content: question });
-
-            const loadingMsg = addMessage('bot', '⏳ Ищу курсы...', true);
-
-            try {
-                const answer = findCoursesLocal(question);
-                if (loadingMsg) loadingMsg.remove();
-                addMessage('bot', answer);
-                chatHistory.push({ role: 'assistant', content: answer });
-            } catch (err) {
-                if (loadingMsg) loadingMsg.remove();
-                addMessage('bot', '❌ Ошибка: ' + err.message);
-            }
-        }
-
-        // Открытие/закрытие чата
-        chatBubble.addEventListener('click', () => {
-            chatModal.classList.toggle('open');
-            if (chatModal.classList.contains('open')) {
-                chatInput.focus();
-            }
-        });
-
-        closeChatBtn.addEventListener('click', () => {
-            chatModal.classList.remove('open');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (chatModal.classList.contains('open') && !chatModal.contains(e.target) && e.target !== chatBubble) {
-                chatModal.classList.remove('open');
-            }
-        });
-
-        chatSendBtn.addEventListener('click', handleChatQuery);
-        chatInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleChatQuery();
-            }
-        });
-
-        console.log('✅ Локальный режим активирован. Всего курсов:', getAllCourses().length);
-    </script>
+console.log('✅ Загружено материалов:', getAllItems().length, '| ДПО:', DPO.length);
+</script>
 </body>
 </html>
