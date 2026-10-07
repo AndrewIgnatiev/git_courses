@@ -23,3 +23,6 @@ dist/
 build/
 .DS_Store
 Thumbs.db
+
+# Книги (слишком тяжёлые, храним на Google Drive)
+books/
